@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<localgroups>
+<!-- See example in section 2.2.7 of Access Control List mechanism - Detailed design -->
+    <group id="app_admin">
+        <member userid="jaanus1"/>
+        <member userid="jaanus2"/>
+        <member userid="ander"/>
+    </group>
+    <group id="app_user">
+        <member userid="roug"/>
+        <member userid="risto"/>
+    </group>
+    <group id="deleters">
+        <member userid="anni"/>
+    </group>
+    <group id="inserters">
+        <member userid="anni"/>
+    </group>
+    <group id="projectmanagers">
+        <member userid="pm1"/>
+        <member userid="pm2"/>
+    </group>
+    <group id="projectusers">
+        <member userid="pm1"/>
+        <member userid="prj_user1"/>
+        <member userid="prj_user2"/>
+        <member userid="prj_user3"/>
+    </group>
+</localgroups>

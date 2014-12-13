@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+     You can run this change log on your database as many times as you want, it will ignore the
+     changes that are already applied. It also means that you can't modify an existing revision.
+     Always add to the end.
+
+     Use the maven goals: liquibase:update and liquibase:status
+      Potentially with -Dliquibase.dropFirst=true
+     $Id: dd-struct.xml 14090 2013-05-24 14:18:00Z voolajuh $
+ -->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet author="voolajuh" id="rev-1">
+        <createTable tableName="ACL_ROWS">
+            <column name="ACL_ID" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="'object'" name="TYPE" type="enum('object','doc','dcc')">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="'user'" name="ENTRY_TYPE" type="enum('owner','user','localgroup','other','foreign','unauthenticated','authenticated','mask')">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="" name="PRINCIPAL" type="CHAR(16)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="" name="PERMISSIONS" type="CHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="0" name="STATUS" type="INT(1)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <modifySql dbms="h2">
+             <!-- <regExpReplace replace="enum.+\)" with="VARCHAR(20)" />  -->
+             <replace replace="enum('object','doc','dcc')" with="VARCHAR(20)" />
+             <replace replace="enum('owner','user','localgroup','other','foreign','unauthenticated','authenticated','mask')" with="VARCHAR(20)" />
+        </modifySql>
+        <modifySql dbms="mysql">
+             <append value=" ENGINE=InnoDB DEFAULT CHARSET=utf8"/>
+        </modifySql>
+    </changeSet>
+
+    <changeSet author="voolajuh" id="rev-2">
+        <createTable tableName="ACLS">
+            <column name="ACL_ID" type="IDENTITY">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column defaultValue="" name="ACL_NAME" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PARENT_NAME" type="VARCHAR(100)"/>
+            <column defaultValue="" name="OWNER" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="" name="DESCRIPTION" type="VARCHAR(255)"/>
+        </createTable>
+        <modifySql dbms="mysql">
+             <append value=" ENGINE=InnoDB DEFAULT CHARSET=utf8"/>
+        </modifySql>
+    </changeSet>
+</databaseChangeLog>

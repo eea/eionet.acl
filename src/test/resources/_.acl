@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<acl description="/">
+<entries>
+<entry type="object"> <!-- This user has only 'd' eventhough he's member of app_admin -->
+<principal id="jaanus1" type="user"/>
+<permissions>
+<permission id="d"/>
+</permissions>
+</entry>
+
+<entry type="object"> <!-- This user has NO permissions eventhough he's member of app_admin -->
+<principal id="ander" type="user"/>
+<permissions>
+</permissions>
+</entry>
+
+<!-- See example in section 2.2.7 of Access Control List mechanism - Detailed design -->
+<entry type="object">
+<principal id="app_admin" type="localgroup"/>
+<permissions>
+<permission id="u"/>
+<permission id="i"/>
+</permissions>
+</entry>
+
+<entry type="object"> <!-- This user has only 'd' eventhough he's member of app_admin -->
+<principal id="jaanus2" type="user"/>
+<permissions>
+<permission id="d"/>
+</permissions>
+</entry>
+
+<entry type="object">
+<principal id="authenticated" type="user"/>
+<permissions>
+<permission id="x"/>
+</permissions>
+</entry>
+
+<entry type="object">
+<principal id="anonymous" type="user"/>
+<permissions>
+<permission id="v"/>
+</permissions>
+</entry>
+
+<entry type="object"> <!-- A typical "superuser" -->
+<principal id="roug" type="user"/>
+<permissions>
+<permission id="v"/>
+<permission id="i"/>
+<permission id="u"/>
+<permission id="d"/>
+<permission id="c"/>
+</permissions>
+</entry>
+
+<entry type="object">
+<principal id="app_user" type="localgroup"/>
+<permissions>
+<permission id="v"/>
+<permission id="i"/>
+<permission id="d"/>
+<permission id="x"/>
+</permissions>
+</entry>
+
+<entry type="object">
+<principal id="deleters" type="localgroup"/>
+<permissions>
+<permission id="d"/>
+</permissions>
+</entry>
+
+<entry type="object">
+<principal id="inserters" type="localgroup"/>
+<permissions>
+<permission id="i"/>
+</permissions>
+</entry>
+
+</entries>
+</acl>

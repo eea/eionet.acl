@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<acl description="/eeaprojects">
+    <entries>
+        <entry type="object">
+            <principal id="app_admin" type="localgroup"/>
+            <permissions>
+                <permission id="i"/>
+            </permissions>
+        </entry>
+
+        <entry type="object">
+            <principal id="heinlaid" type="user"/>
+            <permissions>
+                <permission id="c"/>
+            </permissions>
+        </entry>
+
+        <entry type="doc">
+            <principal id="owner" type="user"/>
+            <permissions>
+                <permission id="d"/>
+                <permission id="u"/>
+                <permission id="c"/>
+            </permissions>
+        </entry>
+
+        <entry type="doc">
+            <principal id="authenticated" type="user"/>
+            <permissions>
+                <permission id="v"/>
+            </permissions>
+        </entry>
+
+        <entry type="dcc">
+            <principal id="owner" type="user"/>
+            <permissions>
+                <permission id="d"/>
+                <permission id="u"/>
+                <permission id="c"/>
+                <permission id="x"/>
+            </permissions>
+        </entry>
+
+
+        <entry type="dcc">
+            <principal id="authenticated" type="user"/>
+            <permissions>
+                <permission id="v"/>
+                <permission id="x"/>
+            </permissions>
+        </entry>
+    </entries>
+</acl>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<acl description="/project">
+    <entries>
+        <entry type="object">
+            <principal id="projectmanagers" type="localgroup"/>
+            <permissions>
+                <permission id="v"/>
+                <permission id="u"/>
+                <permission id="i"/>
+                <permission id="d"/>
+            </permissions>
+        </entry>
+
+        <entry type="object">
+            <principal id="prj_user3" type="user"/>
+            <permissions>
+                <permission id="x"/>
+            </permissions>
+        </entry>
+
+        <entry type="object">
+            <principal id="owner" type="user"/>
+            <permissions>
+                <permission id="u"/>
+                <permission id="v"/>
+                <permission id="c"/>
+            </permissions>
+        </entry>
+
+        <entry type="object">
+            <principal id="authenticated" type="user"/>
+            <permissions>
+                <permission id="v"/>
+            </permissions>
+        </entry>
+
+        <entry type="object">
+            <principal id="projectusers" type="localgroup"/>
+            <permissions>
+                <permission id="v"/>
+                <permission id="u"/>
+            </permissions>
+        </entry>
+
+        <entry type="doc">
+            <principal id="owner" type="user"/>
+            <permissions>
+                <permission id="d"/>
+                <permission id="c"/>
+            </permissions>
+        </entry>
+
+        <entry type="doc">
+            <principal id="authenticated" type="user"/>
+            <permissions>
+                <permission id="v"/>
+            </permissions>
+        </entry>
+
+        <entry type="dcc">
+            <principal id="owner" type="user"/>
+            <permissions>
+                <permission id="d"/>
+                <permission id="c"/>
+                <permission id="x"/>
+            </permissions>
+        </entry>
+
+        <entry type="dcc">
+            <principal id="projectmanagers" type="localgroup"/>
+            <permissions>
+                <permission id="i"/>
+                <permission id="d"/>
+            </permissions>
+        </entry>
+
+        <entry type="dcc">
+            <principal id="projectusers" type="localgroup"/>
+            <permissions>
+                <permission id="v"/>
+                <permission id="u"/>
+            </permissions>
+        </entry>
+
+        <entry type="dcc">
+            <principal id="authenticated" type="user"/>
+            <permissions>
+                <permission id="v"/>
+                <permission id="x"/>
+            </permissions>
+        </entry>
+    </entries>
+</acl>

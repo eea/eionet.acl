@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<localgroups>
+<group id="rod_admin">
+<member userid="roug"/>
+<member userid="kasperen"/>
+<member userid="uriiijuh"/>
+</group>
+<group id="rod_user">
+<member userid="desmepet"/>
+<member userid="jensearn"/>
+</group>
+</localgroups>
