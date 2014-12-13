@@ -369,7 +369,7 @@ public final class AccessController {
     }
 
     /**
-     * Adds a new ACL.
+     * Adds a new ACL. ACLs can be added only to DB tables.
      *
      * @param aclPath full ACL path "/datasets/1234"
      * @param owner owner username
@@ -400,6 +400,7 @@ public final class AccessController {
 
     /**
      * Remove an ACL from the application.
+     * If the ACL is not held in DB table this API function cannot be used.
      *
      * @param aclPath full ACL path
      * @throws SignOnException if no ACL or no DB support
@@ -431,6 +432,7 @@ public final class AccessController {
 
     /**
      * Rename ACL.
+     * If the ACL is not held in DB table this API function cannot be used.
      *
      * @param aclPath - existing ACL full path
      * @param newAclPath - new ACL full path

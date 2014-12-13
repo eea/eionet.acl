@@ -55,9 +55,9 @@ import eionet.acl.impl.PrincipalImpl;
 
 
 /**
- * ACL implementation.
+ * ACL implementation. Works on the ACL object, and can read/write them, but
+ * does not create new ACLs.
  */
-
 class AccessControlList implements AccessControlListIF {
 
     //where the ACL entries are held: text file, DB, ...

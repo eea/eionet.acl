@@ -522,10 +522,6 @@ public class DbModule implements DbModuleIF {
 
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see com.tee.uit.security.DbModuleIF#saveAclEntries(java.lang.String, java.util.ArrayList)
-     */
     @Override
     public void saveAclEntries(String aclName, ArrayList aclEntries) throws SQLException, SignOnException {
 

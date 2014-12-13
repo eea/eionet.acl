@@ -15,7 +15,7 @@ import org.junit.Test;
 
 /**
  *
- * @author Jaanus Heinlaid, e-mail: <a href="mailto:jaanus.heinlaid@tietoenator.com">jaanus.heinlaid@tietoenator.com</a>
+ * @author Jaanus Heinlaid
  *
  */
 public class AccessControlListTest extends ACLDatabaseTestCase {
@@ -308,7 +308,8 @@ public class AccessControlListTest extends ACLDatabaseTestCase {
     }
 
     /**
-     * create an ACL that does not have folder system all permissions must remain sam but DDC and DOC are not copied.
+     * Create an ACL that does not have folder system all permissions must remain same but DDC and DOC are not copied.
+     *
      * @throws Exception if error
      */
     @Test

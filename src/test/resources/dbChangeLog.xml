@@ -6,7 +6,6 @@
 
      Use the maven goals: liquibase:update and liquibase:status
       Potentially with -Dliquibase.dropFirst=true
-     $Id: dd-struct.xml 14090 2013-05-24 14:18:00Z voolajuh $
  -->
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
