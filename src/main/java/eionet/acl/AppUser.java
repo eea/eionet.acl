@@ -27,7 +27,7 @@ import eionet.directory.DirServiceException;
 import eionet.directory.DirectoryService;
 
 /**
- * Implementation of user class for testing purposes.
+ * Implementation of user class for internal purposes.
  *
  * @author heinljab
  *
@@ -45,14 +45,15 @@ public class AppUser {
     }
 
     /**
-     *
-     * @return
+     * Get the user name.
+     * @return the user id
      */
     public String getUserName() {
         return _userName;
     }
 
     /**
+     * Authenticates the user. Face for AuthMechanism.sessionLogin.
      *
      * @param user
      * @param pwd
@@ -70,7 +71,7 @@ public class AppUser {
                 }
             }
 
-            AuthMechanism.sessionLogin(user,pwd);
+            AuthMechanism.sessionLogin(user, pwd);
             _userName = user;
         } catch (SignOnException de) {
             _userName = null;

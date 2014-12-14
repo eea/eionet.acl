@@ -24,7 +24,7 @@
 package eionet.acl;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.HashMap;
 
 /**
@@ -91,5 +91,5 @@ public interface DbModuleIF {
      * @throws SQLException if DB operation fails
      * @throws SignOnException if no such ACL with given name
      */
-    void saveAclEntries(String aclName, ArrayList aclEntries) throws SQLException, SignOnException;
+    void saveAclEntries(String aclName, List aclEntries) throws SQLException, SignOnException;
 }

@@ -95,7 +95,7 @@ public class XmlFileReaderWriter {
     /**
      * Read one group in XML DOM.
      * @param groupElm
-     * @return
+     * @return Group object or null
      */
     private static Group readGroup(Element groupElm, HashMap allUsers) {
 
@@ -169,7 +169,7 @@ public class XmlFileReaderWriter {
 
     /**
      *
-     * @return
+     * @return XML DOM Document.
      * @throws ParserConfigurationException
      */
     private static Document groupsToDOM(Map groups) throws ParserConfigurationException {
@@ -192,7 +192,7 @@ public class XmlFileReaderWriter {
                 rootElm.appendChild(groupElm);
 
                 Vector members = (Vector) groups.get(groupID);
-                for (int j = 0; members != null && j<members.size(); j++) {
+                for (int j = 0; members != null && j < members.size(); j++) {
                     String userID = (String) members.get(j);
                     if (userID != null) {
                         Element memberElm = document.createElement("member");
@@ -207,8 +207,9 @@ public class XmlFileReaderWriter {
     }
 
     /**
+     * Checks an XML file for wellformedness by parsing it.
      *
-     * @return
+     * @return true if the file is wellformed.
      * @throws IOException
      * @throws ParserConfigurationException
      */
@@ -436,7 +437,7 @@ public class XmlFileReaderWriter {
     /**
      *
      * @param entries
-     * @return
+     * @return XML DOM Document
      */
     private static Document aclToDOM(Map aclAttrs, List entries) throws ParserConfigurationException {
 
@@ -505,7 +506,7 @@ public class XmlFileReaderWriter {
      * not generic.
      *
      * @param fileFullPath
-     * @return
+     * @return true if the file looks like XML
      * @throws IOException
      */
     public static boolean isXmlFileWannabe(String fileFullPath) throws IOException {

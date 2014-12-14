@@ -36,8 +36,9 @@ import java.util.Vector;
  */
 public interface AccessControlListIF {
 
-    /** */
+    /** ACL comes from text file. */
     public static final int TEXT_FILE = 1;
+    /** ACL comes from database. */
     public static final int DB = 2;
 
     /**
@@ -58,23 +59,29 @@ public interface AccessControlListIF {
 
     /**
      * Returns DOC and DCC entries of the ACL.
+     *
      * @return list of entries
      * @throws SignOnException if call fails
      */
     List<HashMap<String, String>> getDOCAndDCCEntries()  throws SignOnException;
 
     /**
-     * @return
+     * Returns a code specifying if the ACL comes from file or database.
+     *
+     * @return one of AccessControlListIF.TEXT_FILE or AccessControlListIF.DB
      */
     public int mechanism();
 
     /**
+     * Set ACL entries.
+     *
      * @param aclEntries
      * @throws SignOnException
      */
     public void setAclEntries(Vector aclEntries) throws SignOnException;
 
     /**
+     * Set ACL.
      *
      * @param aclAttrs
      * @param aclEntries
@@ -83,22 +90,23 @@ public interface AccessControlListIF {
     public void setAcl(Map aclAttrs, List aclEntries) throws SignOnException;
 
     /**
+     * Check if the user is the owner of the object.
      *
      * @param user
-     * @return
+     * @return true if the user is the owner of the object.
      * @throws SignOnException
      */
     public boolean isOwner(String user) throws SignOnException;
 
     /**
-     *
-     * @return
+     * Get the name (a.k.a. path) of the ACL.
+     * @return the path
      */
     public String getName();
 
     /**
-     *
-     * @return
+     * Get the human readable description of the ACL.
+     * @return the description
      */
     public String getDescription();
 }

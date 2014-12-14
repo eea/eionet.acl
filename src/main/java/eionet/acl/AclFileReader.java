@@ -1,4 +1,4 @@
-/**
+/*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of
@@ -45,6 +45,9 @@ import eionet.acl.impl.PermissionImpl;
 import eionet.acl.impl.PrincipalImpl;
 
 
+/**
+ * Read and write plain text ACL files.
+ */
 class AclFileReader {
 
     /**
@@ -65,12 +68,8 @@ class AclFileReader {
 
         ArrayList uRows = readFileRows(fileName);
 
-        //groups = new HashMap();
-        //users = new HashMap();
-
         //process the file Rows
         for (Iterator i = uRows.iterator(); i.hasNext();) {
-            //group_name:username1,username2,...,username4
             String ugRow = (String) i.next();
             processLocalGroup(ugRow, groups, users);
 
@@ -149,6 +148,7 @@ class AclFileReader {
     }
 
     /**
+     * Read the permissions from the plain text permissions file.
      *
      * @param fileName
      * @param permissions
@@ -159,11 +159,12 @@ class AclFileReader {
         ArrayList pRows = readFileRows(fileName);
         for (Iterator i = pRows.iterator(); i.hasNext();) {
             String pRow = (String) i.next();
-            processPermissions(pRow, permissions,prmDescrs);
+            processPermissions(pRow, permissions, prmDescrs);
         }
     }
 
     /**
+     * Process a permission description.
      *
      * @param pRow
      * @param permissions
@@ -182,9 +183,8 @@ class AclFileReader {
         String description = pRow.substring(i+1);
         Permission perm = new PermissionImpl(permId);
 
-        //l("putting permission to Hash '" + permId +"'");
+        //l("putting permission to Hash '" + permId + "'");
         permissions.put(permId, perm);
-
 
         //description
         prmDescrs.put(permId, description);
@@ -198,7 +198,6 @@ class AclFileReader {
      * @throws SignOnException
      */
     File[] getAclFiles(String folderName) throws SignOnException {
-        //String xmlDirName = getAppDirectory(Config.WF_DEFINITION_DIR);
 
         File aclDir = new File(folderName);
         if (aclDir.isDirectory())
@@ -221,17 +220,19 @@ class AclFileReader {
 
     /**
      * Get the name of the ACL from the file name it is stored in.
+     *
      * @param aclFile
-     * @return
+     * @return the name of the ACL
      */
     String getAclName(File aclFile) {
         String fileName = aclFile.getName();
         int pos = fileName.indexOf(".acl");
 
-        return fileName.substring(0,pos);
+        return fileName.substring(0, pos);
     }
 
     /**
+     * Write ACL to plain text file format.
      *
      * @param fileName
      * @param fRows

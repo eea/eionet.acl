@@ -1,4 +1,4 @@
-/**
+/*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of
@@ -101,7 +101,14 @@ class AccessControlList implements AccessControlListIF {
      * @author Kaido Laine
      */
     public enum AclEntryType {
-        OBJECT, DOC, DCC;
+        /** Standard ACL. */
+        OBJECT,
+        /** Initial Object Creation. When you create a child object that is <em>not</em>
+         * folder like then it inherits from the parent's DOC. */
+        DOC,
+        /** Initial Container Creation. When you create a child object that is
+         * folder like then it inherits from the parent's DCC. */
+        DCC;
     }
 
     private static final String[] LEGAL_PRINCIPAL_TYPES =
@@ -129,7 +136,9 @@ class AccessControlList implements AccessControlListIF {
 
     }
 
-    //variables for ACL not depending on the mechanism type
+    /**
+     * Initialise variables for ACL not depending on the mechanism type.
+     */
     private void initGlobalVariables() {
         groups = AccessController.groups;
         users = AccessController.users;
@@ -149,7 +158,7 @@ class AccessControlList implements AccessControlListIF {
     }
 
     /**
-     * Constructor.
+     * Construct ACL from contents of file.
      *
      * @param aclFile - The file containing the access control list.
      */
@@ -452,7 +461,7 @@ class AccessControlList implements AccessControlListIF {
      *
      * @param roleName
      * @param permissionsArray
-     * @param doc
+     * @param aclType whether the acl is object, doc or dcc.
      * @throws SignOnException
      */
     public void addRoleRights(String roleName, String permissionsArray, AclEntryType aclType)  throws SignOnException  {
@@ -485,7 +494,9 @@ class AccessControlList implements AccessControlListIF {
         }
     }
 
-    //doc = true if DOC entry
+    /**
+     * Add group rights.
+     */
     public void addGroupRights(String groupName, String permissionsArray, AclEntryType aclType)  throws SignOnException  {
 
         Group grp;
@@ -541,6 +552,9 @@ class AccessControlList implements AccessControlListIF {
 
     }
 
+    /**
+     * Add user rights.
+     */
     public void addUserRights(String userName, String permissionsArray, AclEntryType aclType) throws SignOnException  {
         Principal user = (Principal) users.get(userName);
         Permission oPrm = (Permission) permissions.get(ownerPrm);
@@ -645,7 +659,7 @@ class AccessControlList implements AccessControlListIF {
 
                 if (dbPool != null) {
                     LOGGER.debug("DbPool is not null going to save entries.");
-                    dbPool.saveAclEntries(name, aclEntriesToFileRows(aclEntries));
+                    dbPool.saveAclEntries(name, aclEntries);
                 }
             } catch (SQLException e) {
                 throw new SignOnException(e, "SQL error saving acl '" + name + "' into DB");
@@ -656,40 +670,6 @@ class AccessControlList implements AccessControlListIF {
     @Override
     public void setAclEntries(Vector aclEntries) throws SignOnException {
         setAcl(null, aclEntries);
-    }
-
-    /**
-     * Generate the plain text format of an ACL.
-     * <pre>
-     * user:john:rwx
-     * user:john:rwx:doc
-     * </pre>
-     * @param aclEntries
-     * @return List of rows in the plain text file format.
-     */
-    private static ArrayList aclEntriesToFileRows(List aclEntries) {
-
-        if (aclEntries == null)
-            return null;
-
-        ArrayList l = new ArrayList();
-        for  (int i = 0; i < aclEntries.size(); i++) {
-
-            Hashtable e = (Hashtable) aclEntries.get(i);
-            String eType = (String) e.get("type");
-            String eName = (String) e.get("id");
-            String ePerms = (String) e.get("perms");
-            String aclType = (String) e.get("acltype");
-
-            StringBuffer eRow = new StringBuffer(eType);
-            eRow.append(":").append(eName).append(":").append(ePerms);
-            if (aclType != null && !aclType.equals("object"))
-                eRow.append(":").append(aclType);
-
-            l.add(eRow);
-        }
-
-        return l;
     }
 
     @Override
@@ -727,7 +707,7 @@ class AccessControlList implements AccessControlListIF {
         this.description = sDescription;
     }
 
-    //  check if user entries exist in ACL and set negatvive groupPerms
+    //  check if user entries exist in ACL and set negative groupPerms
 
     /**
      * Hashmap of groups where the user is member of.
@@ -745,7 +725,7 @@ class AccessControlList implements AccessControlListIF {
         return grpNames;
     }
 
-    //translate AclE to understandable folrmat for DB module: aclE
+    //translate AclE to understandable format for DB module: aclE
     private HashMap aclEntryToHash(AclEntry aclE, String permissionsArray, AclEntryType entryType) {
 
         HashMap h = new HashMap();
@@ -778,6 +758,9 @@ class AccessControlList implements AccessControlListIF {
         return docAndDdcEntries;
     }
 
+    /**
+     * Parse ACLS originating from Database.
+     */
     private void readAclsFromDb(String[][] aclRows) throws SignOnException {
         ArrayList aRows = new ArrayList();
         //transform the String to an arraylist similar to text files

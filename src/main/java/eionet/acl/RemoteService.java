@@ -281,9 +281,11 @@ public class RemoteService {
 
 
     /**
-     * RPC method: permissions for the user in the ACL
-     * @eturn java.util.Vector = XML/RPC ARRAY
-     * @params String userName, String aclName
+     * RPC method: permissions for the user in the ACL.
+     *
+     * @param userName - user name
+     * @param aclName - path name of ACL
+     * @return java.util.Vector = XML/RPC ARRAY
      */
     public Vector getUserPermissions(String userName, String aclName) throws SignOnException {
 
@@ -304,8 +306,7 @@ public class RemoteService {
     /**
      * Saves entries of the ACL.
      *
-     * @param String ACL name
-     * @param Array - the same structure as returned by getAclEntries method
+     * @param aclInfo - the same structure as returned by getAclEntries method
      * @return String because XML/RPC does not support null
      */
     public String setAclInfo(Hashtable aclInfo) throws SignOnException {

@@ -48,18 +48,11 @@ public final class AccessController {
     /** System properties. */
     private static ResourceBundle props;
 
+    /** File operations. */
+    private static FileModule fileStorage;
+
     /** Module of DB operations. */
     private static DbModuleIF dbModule;
-
-    /** ACL files reader. */
-    private static AclFileReader fileReader;
-
-    /** File name for local groups. */
-    static String localgroupsFileName;
-    /** File name for permissions. */
-    static String permissionsFileName;
-    /** Folder where ACL files reside. */
-    static String aclsFolderName;
 
     /** Permission to indicate ownership for the ACL. */
     static String ownerPrm = "";
@@ -78,7 +71,7 @@ public final class AccessController {
     /** HashMap for permission descriptions. */
     static Hashtable prmDescrs;
 
-    /** Default permissions for ACLs no DOC and DCC defined. */
+    /** Default permissions for ACLs when no DOC and DCC defined. */
     static String defaultDocAndDccPermissions = "v,i,u,d,c";
 
     /**
@@ -86,13 +79,6 @@ public final class AccessController {
      * if it is in error ACLs are re-ninitialized
      */
     static boolean dbInError = false;
-
-    /**
-     *
-     */
-    static {
-        fileReader = new AclFileReader();
-    }
 
     /**
      * Prevent direct initialization.
@@ -152,21 +138,12 @@ public final class AccessController {
             groups = new HashMap();
             permissions = new HashMap();
             prmDescrs = new Hashtable();
-
-            readGroups();
-            readPermissions();
-
-            // read acl files
-            File[] aclFiles = fileReader.getAclFiles(aclsFolderName);
             acls = new HashMap();
-            for (int i = 0; i < aclFiles.length; i++) {
-                String name = fileReader.getAclName(aclFiles[i]);
-                AccessControlListIF acl = new AccessControlList(aclFiles[i]);
 
-                name = name.replace('_', '/');
-
-                acls.put(name, acl);
-            }
+            getFileStorage();
+            fileStorage.readGroups(groups, users);
+            fileStorage.readPermissions(permissions, prmDescrs);
+            fileStorage.initAcls(acls);
 
             //returns null if DB is not supported, no exception thrown
             DbModuleIF db = getDbModule();
@@ -215,10 +192,9 @@ public final class AccessController {
 
         // read mandatory properties
         try {
-            permissionsFileName = props.getString("application.permissions.file");
-            localgroupsFileName = props.getString("application.localgroups.file");
+            //localgroupsFileName = props.getString("application.localgroups.file");
 
-            aclsFolderName = props.getString("application.acl.folder");
+            //aclsFolderName = props.getString("application.acl.folder");
             ownerPrm = props.getString("acl.owner.permission");
             // pre-defined entry name for anonymous access
             anonymousEntry = props.getString("acl.anonymous.access");
@@ -319,7 +295,7 @@ public final class AccessController {
      * @throws SignOnException if file writing fails
      */
     static void setGroups(Hashtable groups) throws SignOnException {
-        XmlFileReaderWriter.writeGroups(localgroupsFileName, groups);
+        fileStorage.writeGroups(groups);
     }
 
 
@@ -335,6 +311,13 @@ public final class AccessController {
 
         return gPerms;
 
+    }
+
+    static FileModule getFileStorage() {
+        if (fileStorage == null) {
+            fileStorage = new FileModule(props);
+        }
+        return fileStorage;
     }
 
     /**
@@ -464,44 +447,6 @@ public final class AccessController {
             throw new SignOnException("DB operation failed : " + e.toString());
         }
         reset();
-    }
-
-    /**
-     * Read local groups from the files.
-     *
-     * @throws SignOnException if reading fails
-     */
-    private static void readGroups() throws SignOnException {
-        try {
-            if (XmlFileReaderWriter.isXmlFileWannabe(localgroupsFileName))
-                XmlFileReaderWriter.readGroups(localgroupsFileName, groups, users);
-            else
-                fileReader.readGroups(localgroupsFileName, groups, users);
-        } catch (IOException e) {
-            if (e instanceof java.io.FileNotFoundException)
-                throw new SignOnException(e, "No such file: " + localgroupsFileName);
-            else
-                throw new SignOnException(e, "I/O error reading file: " + localgroupsFileName);
-        }
-    }
-
-    /**
-     * Read permissions from the files.
-     *
-     * @throws SignOnException if reading fails
-     */
-    private static void readPermissions() throws SignOnException {
-        try {
-            if (XmlFileReaderWriter.isXmlFileWannabe(permissionsFileName))
-                XmlFileReaderWriter.readPermissions(permissionsFileName, permissions, prmDescrs);
-            else
-                fileReader.readPermissions(permissionsFileName, permissions, prmDescrs);
-        } catch (IOException e) {
-            if (e instanceof java.io.FileNotFoundException)
-                throw new SignOnException(e, "No such file: " + localgroupsFileName);
-            else
-                throw new SignOnException(e, "I/O error reading file: " + localgroupsFileName);
-        }
     }
 
     /**

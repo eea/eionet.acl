@@ -3,6 +3,7 @@ ACL Module 2.0
 
 This is a module that implements an Access Control Mechanism based on Distributed Computing Environment.
 
+Version 2.0 has the same public interface as version 1.x except the package name space is changed from com.tee.uit.security to eionet.acl.
 Installation and usage:
 -----------------------
 This package is built with Maven, and is deployed to the agency repository.

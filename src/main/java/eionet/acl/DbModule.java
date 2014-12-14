@@ -30,6 +30,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -430,7 +431,7 @@ public class DbModule implements DbModuleIF {
     /**
      * Returns new database connection.
      *
-     * @throw ServiceException if no connections were available.
+     * @throws ServiceException if no connections were available.
      */
     public Connection getConnection() throws SQLException {
         return dbConnection.getConnection(dbUser, dbPwd);
@@ -523,8 +524,9 @@ public class DbModule implements DbModuleIF {
     }
 
     @Override
-    public void saveAclEntries(String aclName, ArrayList aclEntries) throws SQLException, SignOnException {
+    public void saveAclEntries(String aclName, List aclEntries) throws SQLException, SignOnException {
 
+        ArrayList aclEntriesAsRows = aclEntriesToFileRows(aclEntries);
         // split parent and acl name
         String parentName = null;
         if (!aclName.equals("/")) {
@@ -554,9 +556,9 @@ public class DbModule implements DbModuleIF {
         LOGGER.debug("Backup done, entries in the ACL " + r.length);
         // process rows in the list, add into DB
         try {
-            LOGGER.debug("Going to save entries, sizeL " + aclEntries.size());
-            for (int i = 0; i < aclEntries.size(); i++) {
-                saveAclEntry(aclId, aclEntries.get(i).toString());
+            LOGGER.debug("Going to save entries, sizeL " + aclEntriesAsRows.size());
+            for (int i = 0; i < aclEntriesAsRows.size(); i++) {
+                saveAclEntry(aclId, aclEntriesAsRows.get(i).toString());
             }
         } catch (Exception e) {
             //recover old rows
@@ -570,6 +572,40 @@ public class DbModule implements DbModuleIF {
         // success, delete old rows, change status of new ones
         sql = "DELETE FROM ACL_ROWS WHERE STATUS='0' AND ACL_ID=" + aclId;
         executeUpdate(sql);
+    }
+
+    /**
+     * Generate the plain text format of an ACL.
+     * <pre>
+     * user:john:rwx
+     * user:john:rwx:doc
+     * </pre>
+     * @param aclEntries
+     * @return List of rows in the plain text file format.
+     */
+    private static ArrayList aclEntriesToFileRows(List aclEntries) {
+
+        if (aclEntries == null)
+            return null;
+
+        ArrayList l = new ArrayList();
+        for  (int i = 0; i < aclEntries.size(); i++) {
+
+            Hashtable e = (Hashtable) aclEntries.get(i);
+            String eType = (String) e.get("type");
+            String eName = (String) e.get("id");
+            String ePerms = (String) e.get("perms");
+            String aclType = (String) e.get("acltype");
+
+            StringBuffer eRow = new StringBuffer(eType);
+            eRow.append(":").append(eName).append(":").append(ePerms);
+            if (aclType != null && !aclType.equals("object"))
+                eRow.append(":").append(aclType);
+
+            l.add(eRow);
+        }
+
+        return l;
     }
 
     /**
