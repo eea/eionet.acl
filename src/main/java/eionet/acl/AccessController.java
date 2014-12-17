@@ -1,4 +1,4 @@
-/**
+/*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of
@@ -23,8 +23,6 @@
 
 package eionet.acl;
 
-import java.io.File;
-import java.io.IOException;
 import java.security.Principal;
 import java.security.acl.Group;
 import java.util.Enumeration;
@@ -248,6 +246,42 @@ public final class AccessController {
     }
 
     /**
+     * Method to check if the user has the requested permission. If the user name is null
+     * or empty then the user is not authenticated.
+     *
+     * @param userName - name of the account
+     * @param aclPath - like "/" or "/whatever"
+     * @param permissionFlag - Permission flag - like "r".
+     * @return true if the user has the requested permission.
+     * @throws SignOnException if reading fails
+     */
+    public static boolean hasPermission(String userName, String aclPath, String permissionFlag) throws SignOnException {
+        AccessControlListIF acl = getAcl(aclPath);
+        return acl.checkPermission(userName, permissionFlag);
+    }
+
+    /**
+     * Method to check if the user has the requested permission. If the principal is null
+     * then the user is not authenticated.
+     *
+     * @param principal - User object that implements the UserPrincipal interface.
+     * @param aclPath - like "/" or "/whatever"
+     * @param permissionFlag - Permission flag - like "r".
+     * @return true if the user has the requested permission.
+     * @throws SignOnException if reading fails
+     */
+    /*
+    public static boolean hasPermission(Principal principal, String aclPath, String permissionFlag) throws SignOnException {
+        AccessControlListIF acl = getAcl(aclPath);
+        if (principal != null) {
+            return acl.checkPermission(principal.getName(), permissionFlag);
+        } else {
+            return acl.checkPermission(null, permissionFlag);
+        }
+    }
+    */
+
+    /**
      * Returns permissions of the user in all ACls.
      * Format: ACLName:p1,ACLName:p2,AclName2:p1,
      * @param user username
@@ -313,6 +347,11 @@ public final class AccessController {
 
     }
 
+    /**
+     * Get File module singleton.
+     *
+     * @return file module
+     */
     static FileModule getFileStorage() {
         if (fileStorage == null) {
             fileStorage = new FileModule(props);
@@ -357,10 +396,10 @@ public final class AccessController {
      * @param aclPath full ACL path "/datasets/1234"
      * @param owner owner username
      * @param description ACL description
-     * @param hasSubFolders indicates if the created object can have subfolders
+     * @param isFolder indicates if the created object can have children objects
      * @throws SignOnException if ACL exists or DB operation fails
      */
-    public static void addAcl(String aclPath, String owner, String description, boolean hasSubFolders) throws SignOnException {
+    public static void addAcl(String aclPath, String owner, String description, boolean isFolder) throws SignOnException {
 
         if (AccessController.getAcls().containsKey(aclPath)) {
             throw new SignOnException("ACL, named " + aclPath + " already exists.");
@@ -371,7 +410,7 @@ public final class AccessController {
             DbModuleIF dbm = getDbModule();
             // if acls in database are not supported, ignore
             if (dbm != null) {
-                dbm.addAcl(aclPath, owner, description, hasSubFolders);
+                dbm.addAcl(aclPath, owner, description, isFolder);
             }
         } catch (Exception e) {
             throw new SignOnException("DB operation failed : " + e.toString());
@@ -397,7 +436,7 @@ public final class AccessController {
         AccessControlListIF acl = AccessController.getAcl(aclPath);
 
         // if the ACL is not held in DB table this API function cannot be used
-        if (acl.mechanism() != acl.DB) {
+        if (!(acl instanceof AccessControlListFromDB)) {
             throw new SignOnException("This ACL cannot be removed by this method.");
         }
 
@@ -433,7 +472,7 @@ public final class AccessController {
         AccessControlListIF acl = AccessController.getAcl(aclPath);
 
         // if the ACL is not held in DB table this API function cannot be used
-        if (acl.mechanism() != acl.DB) {
+        if (acl instanceof AccessControlListFromFile) {
             throw new SignOnException("This ACL cannot be renamed by this method.");
         }
 

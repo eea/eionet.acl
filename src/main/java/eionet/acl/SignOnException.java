@@ -1,4 +1,4 @@
-/**
+/*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of
@@ -29,10 +29,19 @@ package eionet.acl;
  */
 public class SignOnException extends Exception {
 
+    /**
+     * Constructor.
+     * @param s - message
+     */
     public SignOnException(Throwable t, String s) {
-        super(s,t);
+        super(s, t);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param s - message
+     */
     public SignOnException(String s) {
         super(s);
     }

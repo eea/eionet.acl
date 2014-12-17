@@ -1,4 +1,4 @@
-/**
+/*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of
@@ -83,11 +83,11 @@ public interface AccessControlListIF {
     /**
      * Set ACL.
      *
-     * @param aclAttrs
+     * @param aclAttrs - A map of attributes. The "description" is an attribute.
      * @param aclEntries
      * @throws SignOnException
      */
-    public void setAcl(Map aclAttrs, List aclEntries) throws SignOnException;
+    public void setAcl(Map<String, String> aclAttrs, List aclEntries) throws SignOnException;
 
     /**
      * Check if the user is the owner of the object.

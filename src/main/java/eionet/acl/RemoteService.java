@@ -1,4 +1,4 @@
-/**
+/*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of
@@ -43,7 +43,8 @@ public class RemoteService {
 
     private static Logger LOGGER = Logger.getLogger(RemoteService.class);
 
-    public RemoteService()  {}
+    public RemoteService() {
+    }
 
     public RemoteService(AppUser user)  {
         _user = user;
@@ -64,7 +65,7 @@ public class RemoteService {
 
         AccessControlListIF acl = AccessController.getAcl(aclName);
         /*
-         if (! acl.isOwner(_user.getUserName()))
+         if (!acl.isOwner(_user.getUserName()))
          throw new SignOnException("Not owner");
          */
         Hashtable aclInfo = new Hashtable();
@@ -79,15 +80,12 @@ public class RemoteService {
         else
             aclInfo.put("flags", "tableperms");
 
-        Vector entries=  acl.getEntryRows();
+        Vector entries = acl.getEntryRows();
         aclInfo.put("entries", entries);
 
 //      System.out.println("======== entries: " + entries.size());
 
         aclInfo.put("owner", new Boolean(acl.isOwner(_user.getUserName())).toString());
-
-        //where the ACL data is stored
-        //aclInfo.put("mechanism", new Integer(acl.mechanism()));
 
         return aclInfo;
     }
@@ -109,15 +107,15 @@ public class RemoteService {
         Vector v = new Vector();
         HashMap acls = AccessController.getAcls();
         for (Iterator i = acls.keySet().iterator(); i.hasNext();) {
-            String aclName=(String) i.next();
-            AccessControlListIF acl = (AccessControlListIF) acls.get(aclName) ;
+            String aclName = (String) i.next();
+            AccessControlListIF acl = (AccessControlListIF) acls.get(aclName);
 
-            if (! aclName.equals(parentAclName) &&
-                    aclName.length() >= parentAclName.length() &&
-                    aclName.substring(0, parentAclName.length()).equals(parentAclName) &&
-                    aclName.indexOf("/", parentAclName.length()+1) == -1)
+            if (!aclName.equals(parentAclName)
+                    && aclName.length() >= parentAclName.length()
+                    && aclName.substring(0, parentAclName.length()).equals(parentAclName)
+                    && aclName.indexOf("/", parentAclName.length() + 1) == -1)
 
-                v. add(aclName);
+                v.add(aclName);
         }
 
         //acl.isOwner(_user.getUser()
@@ -146,7 +144,7 @@ public class RemoteService {
 
         //sort alphabetically
         Collator collator = Collator.getInstance();
-        Collections.sort(v,collator);
+        Collections.sort(v, collator);
 
         return v;
     }
@@ -244,12 +242,11 @@ public class RemoteService {
         String aclName, permFlag;
 
         if (AccessController.getAcls().containsKey("/localgroups")) {
-            aclName="/localgroups";
-            permFlag="v"; //hard coded!
-        }
-        else {
+            aclName = "/localgroups";
+            permFlag = "v"; //hard coded!
+        } else {
             aclName = "/"; //use ROOt instead if not localgroups ACL
-            permFlag= AccessController.ownerPrm;  //require control permission of ROOT
+            permFlag = AccessController.ownerPrm;  //require control permission of ROOT
         }
 
 
@@ -295,7 +292,7 @@ public class RemoteService {
         AccessControlListIF acl = AccessController.getAcl(aclName);
 
         //user must have the control access over the ACL
-        if (! acl.isOwner(_user.getUserName()))
+        if (!acl.isOwner(_user.getUserName()))
             throw new SignOnException("Not owner of " + aclName);
 
         Vector prms = acl.getPermissions(userName);
@@ -321,7 +318,7 @@ public class RemoteService {
 
         Vector aclEntries = (Vector) aclInfo.get("entries");
         LOGGER.debug("ACL " + aclName + " entries size=" + aclEntries.size());
-        Map aclAttrs = new HashMap();
+        Map<String, String> aclAttrs = new HashMap<String, String>();
         String aclDescription = (String) aclInfo.get("description");
         if (aclDescription != null)
             aclAttrs.put("description", aclDescription);
@@ -339,26 +336,25 @@ public class RemoteService {
      * if not such ACL, '/' is used
      */
 
-    public String setLocalGroups (Hashtable groups) throws SignOnException {
+    public String setLocalGroups(Hashtable groups) throws SignOnException {
         if (_user == null)
             throw new SignOnException("Not authenticated");
 
         String aclName, permFlag;
 
         if (AccessController.getAcls().containsKey("/localgroups")) {
-            aclName="/localgroups";
-            permFlag="u"; //hard coded!
-        }
-        else {
+            aclName = "/localgroups";
+            permFlag = "u"; //hard coded!
+        } else {
             aclName = "/"; //use ROOt instead if not localgroups ACL
-            permFlag= AccessController.ownerPrm;  //require control permission of ROOT
+            permFlag = AccessController.ownerPrm;  //require control permission of ROOT
         }
 
         AccessControlListIF acl = AccessController.getAcl(aclName);
 
-        String userName=  (_user == null ? null : _user.getUserName());
+        String userName = (_user == null ? null : _user.getUserName());
 
-        if (! acl.checkPermission(userName, permFlag))
+        if (!acl.checkPermission(userName, permFlag))
             throw new SignOnException("Not allowed to change localgroups");
 
         AccessController.setGroups(groups);
@@ -368,13 +364,13 @@ public class RemoteService {
     }
 
     public static String[] methodNames() {
-        String r[]={"getAclInfo", "getLocalGroups", "getChildrenAcls",
+        String r[] = {"getAclInfo", "getLocalGroups", "getChildrenAcls",
                 "getUserPermissions",   "setAclInfo", "setLocalGroups", "getAclManagerInfo", "getAcls", "getAclInfos"};
         return r;
     }
 
     public static String[] valueTypes() {
-        String r[]={"STRUCT", "STRUCT", "ARRAY", "ARRAY", "STRING", "STRING", "STRUCT", "ARRAY", "STRUCT"};
+        String r[] = {"STRUCT", "STRUCT", "ARRAY", "ARRAY", "STRING", "STRING", "STRUCT", "ARRAY", "STRUCT"};
         return r;
     }
 

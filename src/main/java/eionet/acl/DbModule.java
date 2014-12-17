@@ -1,4 +1,4 @@
-/**
+/*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of
@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
@@ -85,7 +86,7 @@ public class DbModule implements DbModuleIF {
 
     /**
      * Checks ACL tables existance.
-     * @throws SQLException in case of different database errors: wring configuration,
+     * @throws SQLException in case of different database errors: wrong configuration,
      *   database is down etc
      * @throws DbNotSupportedException if no ACL tables
      */
@@ -169,13 +170,13 @@ public class DbModule implements DbModuleIF {
      *            list of DOC and DCC entries
      * @param owner
      *            ACL owner
-     * @param hasSubFolders
+     * @param isFolder
      *            true if can have sub-folders
      * @throws SQLException
      *             if inserts fail
      */
     private void processDocAndDccEntries(String aclId, List<HashMap<String, String>> docAndDccEntries, String owner,
-            boolean hasSubFolders) throws SQLException {
+            boolean isFolder) throws SQLException {
 
         String sql;
 
@@ -184,7 +185,7 @@ public class DbModule implements DbModuleIF {
         // if a user is a DOC ACL and she is the owner as well only the owner permissions are granted!!
 
         // add default DCC entry if no DCC entries:
-        createDefaultDCCEntries(docAndDccEntries, hasSubFolders);
+        createDefaultDCCEntries(docAndDccEntries, isFolder);
 
         // if (docAndDccEntries.size() > 0) {
         HashMap<String, String> ownerE = null;
@@ -198,10 +199,10 @@ public class DbModule implements DbModuleIF {
             String permissions = aclEntry.get("PERMISSIONS");
 
             // first copy the DCC or DOC entry to the ACL if folders are supported:
-            if (hasSubFolders) {
+            if (isFolder) {
                 sql =
-                        "INSERT INTO ACL_ROWS (ACL_ID, ENTRY_TYPE, TYPE, PRINCIPAL, PERMISSIONS, STATUS) " + " VALUES(" + aclId
-                                + ", '" + type + "','" + eType + "','" + eName + "','" + permissions + "', 1)";
+                        "INSERT INTO ACL_ROWS (ACL_ID, ENTRY_TYPE, TYPE, PRINCIPAL, PERMISSIONS, STATUS) "
+                        + " VALUES (" + aclId + ", '" + type + "','" + eType + "','" + eName + "','" + permissions + "', 1)";
                 executeUpdate(sql);
             }
 
@@ -221,8 +222,8 @@ public class DbModule implements DbModuleIF {
                 if (entryPermissions == null) {
                     // TODO - change type and entry_type
                     sql =
-                            "INSERT INTO ACL_ROWS (ACL_ID, ENTRY_TYPE, TYPE, PRINCIPAL, PERMISSIONS, STATUS) " + " VALUES("
-                                    + aclId + ", '" + type + "','" + eType + "','" + eName + "','" + permissions + "', 1)";
+                            "INSERT INTO ACL_ROWS (ACL_ID, ENTRY_TYPE, TYPE, PRINCIPAL, PERMISSIONS, STATUS) "
+                            + " VALUES (" + aclId + ", '" + type + "','" + eType + "','" + eName + "','" + permissions + "', 1)";
                 } else {
                     entryPermissions = mergePermissions(entryPermissions, permissions);
                     sql =
@@ -243,8 +244,8 @@ public class DbModule implements DbModuleIF {
             String[][] r = executeStringQuery(sql);
             if (r.length == 0) { // not existing
                 sql =
-                        "INSERT INTO ACL_ROWS (ACL_ID, ENTRY_TYPE, TYPE, PRINCIPAL, PERMISSIONS, STATUS) " + " VALUES(" + aclId
-                                + ", 'user','object','" + owner + "','" + ownerE.get("PERMISSIONS") + "', 1)";
+                        "INSERT INTO ACL_ROWS (ACL_ID, ENTRY_TYPE, TYPE, PRINCIPAL, PERMISSIONS, STATUS) "
+                        + " VALUES (" + aclId + ", 'user','object','" + owner + "','" + ownerE.get("PERMISSIONS") + "', 1)";
 
             } else { // exists, replace the PERMISSIONS
                 sql =
@@ -516,15 +517,25 @@ public class DbModule implements DbModuleIF {
             sql = "SELECT TYPE, ENTRY_TYPE, PRINCIPAL, PERMISSIONS FROM ACL_ROWS WHERE ACL_ID=" + aclId;
             String[][] aclRows = executeStringQuery(sql);
 
-            AccessControlListIF acl = new AccessControlList(aclName, owner, description, aclRows);
+            AccessControlListIF acl = new AccessControlListFromDB(aclName, owner, description, aclRows);
 
             acls.put(aclName, acl);
         }
 
     }
 
+    /**
+     * Stores ACL in the DB table. The <code>aclAttrs</code> is unused. You can't currently change
+     * the description in the database.
+     *
+     * @param aclName ACL path
+     * @param aclAttrs - A map of attributes. The "description" is an attribute.
+     * @param aclEntries list of ACL Entries
+     * @throws SQLException if DB operation fails
+     * @throws SignOnException if no such ACL with given name
+     */
     @Override
-    public void saveAclEntries(String aclName, List aclEntries) throws SQLException, SignOnException {
+    public void writeAcl(String aclName, Map<String, String> aclAttrs, List aclEntries) throws SQLException, SignOnException {
 
         ArrayList aclEntriesAsRows = aclEntriesToFileRows(aclEntries);
         // split parent and acl name
@@ -637,7 +648,7 @@ public class DbModule implements DbModuleIF {
         //ignore "description" because we hold descriptions in ACL text files only
         if (!eType.equals("description")) {
             String sql = "INSERT INTO ACL_ROWS (ACL_ID, ENTRY_TYPE, TYPE, PRINCIPAL, PERMISSIONS, STATUS) "
-                    + " VALUES(" + aclId + ", '" + eType + "','" + aclType + "','" + eName + "','" + ePerms + "', 1)";
+                    + " VALUES (" + aclId + ", '" + eType + "','" + aclType + "','" + eName + "','" + ePerms + "', 1)";
             executeUpdate(sql);
         }
     }
@@ -695,4 +706,7 @@ public class DbModule implements DbModuleIF {
 
     }
 
+    public void readGroups(Map groups, Map users) throws SignOnException {
+        throw new UnsupportedOperationException();
+    }
 }

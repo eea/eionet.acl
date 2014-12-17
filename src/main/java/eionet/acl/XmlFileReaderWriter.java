@@ -68,7 +68,7 @@ public class XmlFileReaderWriter {
 
             // get nodelist of <group> elements
             NodeList nl = rootElm.getElementsByTagName("group");
-            for(int i = 0; nl != null && i < nl.getLength(); i++) {
+            for (int i = 0; nl != null && i < nl.getLength(); i++) {
                 Element elm = (Element) nl.item(i);
                 Group group = readGroup(elm, users);
                 groups.put(group.getName(), group);
@@ -76,7 +76,8 @@ public class XmlFileReaderWriter {
         } catch (FactoryConfigurationError e) {
             e.printStackTrace(System.out);
             // unable to get a document builder factory
-            throw new SignOnException(e, "Failed to read groups from " + fileFullPath + ", unable to get a document builder factory");
+            throw new SignOnException(e, "Failed to read groups from " + fileFullPath
+                    + ", unable to get a document builder factory");
         } catch (ParserConfigurationException e) {
             e.printStackTrace(System.out);
             // parser was unable to be configured
@@ -105,10 +106,10 @@ public class XmlFileReaderWriter {
 
         Group group = new GroupImpl(groupID);
         NodeList nl = groupElm.getElementsByTagName("member");
-        for(int i = 0; nl != null && i < nl.getLength(); i++) {
+        for (int i = 0; nl != null && i < nl.getLength(); i++) {
             Element elm = (Element) nl.item(i);
             String userID = elm.getAttribute("userid");
-            if (userID != null && userID.length()> 0) {
+            if (userID != null && userID.length() > 0) {
                 Principal principal = new PrincipalImpl(userID);
                 allUsers.put(userID, principal);
                 group.addMember(principal);
@@ -133,7 +134,7 @@ public class XmlFileReaderWriter {
         OutputStreamWriter osw = null;
         try {
             Transformer tr = trf.newTransformer();
-            tr.setOutputProperty(OutputKeys.METHOD,"xml");
+            tr.setOutputProperty(OutputKeys.METHOD, "xml");
             tr.setOutputProperty(OutputKeys.INDENT, "yes");
 
             Document dom = groupsToDOM(groups);
@@ -149,7 +150,8 @@ public class XmlFileReaderWriter {
             throw new SignOnException(e, "Failed to write groups to " + fileFullPath + ", ParserConfigurationException");
         } catch (FileNotFoundException e) {
             e.printStackTrace(System.out);
-            throw new SignOnException(e, "Failed to write groups to " + fileFullPath + ", problem with creating or opening the file");
+            throw new SignOnException(e, "Failed to write groups to " + fileFullPath
+                    + ", problem with creating or opening the file");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace(System.out);
             throw new SignOnException(e, "Failed to write groups to " + fileFullPath + ", UnsupportedEncodingException");
@@ -250,7 +252,7 @@ public class XmlFileReaderWriter {
 
             // get nodelist of <group> elements
             NodeList nl = rootElm.getElementsByTagName("permission");
-            for(int i = 0; nl != null && i < nl.getLength(); i++) {
+            for (int i = 0; nl != null && i < nl.getLength(); i++) {
                 Element elm = (Element) nl.item(i);
                 String prmID = elm.getAttribute("id");
                 String prmDescr = elm.getAttribute("description");
@@ -262,11 +264,13 @@ public class XmlFileReaderWriter {
         } catch (FactoryConfigurationError e) {
             e.printStackTrace(System.out);
             // unable to get a document builder factory
-            throw new SignOnException(e, "Failed to read permissions from " + fileFullPath + ", unable to get a document builder factory");
+            throw new SignOnException(e, "Failed to read permissions from " + fileFullPath
+                    + ", unable to get a document builder factory");
         } catch (ParserConfigurationException e) {
             e.printStackTrace(System.out);
             // parser was unable to be configured
-            throw new SignOnException(e, "Failed to read permissions from " + fileFullPath + ", parser configuration problem");
+            throw new SignOnException(e, "Failed to read permissions from " + fileFullPath
+                    + ", parser configuration problem");
         } catch (SAXException e) {
             e.printStackTrace(System.out);
             // parsing error
@@ -313,7 +317,7 @@ public class XmlFileReaderWriter {
             // loop through entries, for each of them construct an acl row in the old format (i.e. user:roug:i,v,u),
             // collect those rows into a list
             ArrayList rows = new ArrayList();
-            for(int i = 0; i < nlEntry.getLength(); i++) {
+            for (int i = 0; i < nlEntry.getLength(); i++) {
 
                 // get entry's type
                 Element entryElm = (Element) nlEntry.item(i);
@@ -343,7 +347,7 @@ public class XmlFileReaderWriter {
                 int j;
                 StringBuffer rowStrBuf = new StringBuffer();
                 rowStrBuf.append(principalType).append(":").append(principalId).append(":");
-                for (j = 0; nlPermissions != null && j<nlPermissions.getLength(); j++) {
+                for (j = 0; nlPermissions != null && j < nlPermissions.getLength(); j++) {
 
                     Element prmElm = (Element) nlPermissions.item(j);
                     String prmId = prmElm.getAttribute("id");
@@ -358,7 +362,7 @@ public class XmlFileReaderWriter {
 
                 // if this is a DOC- or DCC- type entry, append ":doc" or ":ddc" to the end of the constructed row string
                 if (isNotObject && j > 0) {
-                    rowStrBuf.append(":").append(entryType) ;
+                    rowStrBuf.append(":").append(entryType);
                 }
                 // add row to the list
                 rows.add(rowStrBuf.toString());
@@ -391,7 +395,7 @@ public class XmlFileReaderWriter {
      * @param aclEntries
      * @throws SignOnException
      */
-    public static void writeACL(String fileFullPath, Map aclAttrs, List aclEntries) throws SignOnException {
+    public static void writeACL(String fileFullPath, Map<String, String> aclAttrs, List aclEntries) throws SignOnException {
 
         TransformerFactory trf = TransformerFactory.newInstance();
 
@@ -399,7 +403,7 @@ public class XmlFileReaderWriter {
         OutputStreamWriter osw = null;
         try {
             Transformer tr = trf.newTransformer();
-            tr.setOutputProperty(OutputKeys.METHOD,"xml");
+            tr.setOutputProperty(OutputKeys.METHOD, "xml");
             tr.setOutputProperty(OutputKeys.INDENT, "yes");
 
             // TODO: init dom
@@ -439,7 +443,7 @@ public class XmlFileReaderWriter {
      * @param entries
      * @return XML DOM Document
      */
-    private static Document aclToDOM(Map aclAttrs, List entries) throws ParserConfigurationException {
+    private static Document aclToDOM(Map<String, String> aclAttrs, List entries) throws ParserConfigurationException {
 
         // create document builder factory and document
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -451,7 +455,7 @@ public class XmlFileReaderWriter {
         document.appendChild(rootElm);
 
         // set acl attributes
-        if (aclAttrs != null && aclAttrs.size()> 0) {
+        if (aclAttrs != null && aclAttrs.size() > 0) {
             for (Iterator i = aclAttrs.keySet().iterator(); i.hasNext();) {
                 String attrName = (String) i.next();
                 rootElm.setAttribute(attrName, (String) aclAttrs.get(attrName));

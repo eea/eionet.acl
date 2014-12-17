@@ -1,4 +1,4 @@
-/**
+/*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of
@@ -125,7 +125,7 @@ public class FileModule {
         File[] aclFiles = fileReader.getAclFiles(aclsFolderName);
         for (int i = 0; i < aclFiles.length; i++) {
             String name = fileReader.getAclName(aclFiles[i]);
-            AccessControlListIF acl = new AccessControlList(aclFiles[i]);
+            AccessControlListIF acl = new AccessControlListFromFile(aclFiles[i]);
             
             name = name.replace('_', '/');
             
@@ -133,8 +133,8 @@ public class FileModule {
         }   
     }
 
-    /**
-    public void saveAclEntries(String aclName, List aclEntries) throws SignOnException {
+    /*
+    void writeAcl(String aclName, Map<String, String> aclAttrs, List aclEntries) throws SignOnException {
       // Need to encapsulate aclFileName
       //XmlFileReaderWriter.writeACL(aclFileName, aclAttrs, aclEntries);
     }

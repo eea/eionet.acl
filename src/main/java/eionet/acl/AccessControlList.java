@@ -58,7 +58,7 @@ import eionet.acl.impl.PrincipalImpl;
  * ACL implementation. Works on the ACL object, and can read/write them, but
  * does not create new ACLs.
  */
-class AccessControlList implements AccessControlListIF {
+abstract class AccessControlList implements AccessControlListIF {
 
     //where the ACL entries are held: text file, DB, ...
     /**
@@ -67,16 +67,14 @@ class AccessControlList implements AccessControlListIF {
      */
     private int mechanismType;
 
-    /** The filename containing the ACL. */
-    private String aclFileName;
-
     private String ownerPrm;
 
     private String anonymousUserName;
     private String authUserName;
 
-    private String name;
-    private String description;
+    /** Name of ACL object. */
+    protected String name;
+    protected String description;
 
     private HashMap groups;
     private HashMap users;
@@ -89,8 +87,8 @@ class AccessControlList implements AccessControlListIF {
      */
     private List<HashMap<String, String>> docAndDdcEntries;
 
-    private Acl acl;
-    private Principal owner;
+    protected Acl acl;
+    protected Principal owner;
     private AclFileReader fReader;
     private DbModuleIF dbPool;
 
@@ -115,31 +113,9 @@ class AccessControlList implements AccessControlListIF {
     {"owner", "user", "localgroup", "other", "foreign", "unauthenticated", "authenticated", "mask", "anonymous", "circarole"};
 
     /**
-     * Constructor if the ACL is initialised based on DB table rows.
+     * Initialise variables for ACL not depending on the mechanism.
      */
-    AccessControlList(String name, String ownerName, String description, String[][] aclRows) throws SignOnException {
-        initGlobalVariables();
-
-        //we have to set a fake owner if there is no owner specified in the ACL
-        if (ownerName == null || ownerName.equals(""))
-            owner = new PrincipalImpl(name);
-        else
-            owner = new PrincipalImpl(ownerName);
-
-        acl = new AclImpl(owner, name);
-        this.description = description;
-        this.name = name;
-
-        readAclsFromDb(aclRows);
-
-        mechanismType = DB;
-
-    }
-
-    /**
-     * Initialise variables for ACL not depending on the mechanism type.
-     */
-    private void initGlobalVariables() {
+    protected AccessControlList() {
         groups = AccessController.groups;
         users = AccessController.users;
 
@@ -156,39 +132,6 @@ class AccessControlList implements AccessControlListIF {
         docAndDdcEntries = new ArrayList<HashMap<String, String>>();
 
     }
-
-    /**
-     * Construct ACL from contents of file.
-     *
-     * @param aclFile - The file containing the access control list.
-     */
-    AccessControlList(File aclFile) throws SignOnException {
-        initGlobalVariables();
-
-        fReader = new AclFileReader();
-        name = fReader.getAclName(aclFile);
-
-        name = name.replace('_', '/');
-
-        // JH - let's be more tolerant here and accept AccessController.permissions,
-        // JH - because users might forget that only special set of permissions is allowd in /localgroups acl
-        //      if (name.equals("/localgroups"))
-        //          permissions=AccessController.groupPermissions();
-
-        //!!description cannot be null
-        description = name;
-
-        aclFileName = aclFile.getAbsolutePath();
-
-        //1st we set a fake owner, text file based ACL's do not have
-        //one special owner specified
-        owner = new PrincipalImpl(name);
-
-        acl = new AclImpl(owner, name);
-        readAclFromFile();
-        mechanismType = TEXT_FILE;
-    }
-
 
     /**
      * Returns ACL entry rows.
@@ -332,6 +275,7 @@ class AccessControlList implements AccessControlListIF {
 
     /**
      * Check if the user has this permission in this ACL.
+     * If the user name is null or empty then the user is not authenticated.
      * @param userName username
      * @param permission permission to check
      * @return true if user has permission
@@ -346,7 +290,6 @@ class AccessControlList implements AccessControlListIF {
 
         // anonymous user
         if (userName == null || userName.trim().length() == 0) {
-
             Principal anonymousPrincipal = (Principal) users.get(anonymousUserName);
             return anonymousPrincipal != null && acl.checkPermission(anonymousPrincipal, permissionObject);
         } else {
@@ -387,28 +330,6 @@ class AccessControlList implements AccessControlListIF {
             processRights(aRow, true); // true here means we process groups+roles
         }
 
-    }
-
-    /**
-     * Read the ACL from a file. The format can be in XML or plain text.
-     *
-     * @throws SignOnException
-     */
-    private void readAclFromFile() throws SignOnException {
-
-        try {
-            if (XmlFileReaderWriter.isXmlFileWannabe(aclFileName))
-                XmlFileReaderWriter.readACL(aclFileName, this);
-            else {
-                ArrayList aRows = fReader.readFileRows(aclFileName);
-                processAclRows(aRows);
-            }
-        } catch (IOException e) {
-            if (e instanceof java.io.FileNotFoundException)
-                throw new SignOnException(e, "No such file: " + aclFileName);
-            else
-                throw new SignOnException(e, "I/O error reading file: " + aclFileName);
-        }
     }
 
     /**
@@ -614,7 +535,6 @@ class AccessControlList implements AccessControlListIF {
     }
 
 
-
     private String  getEntryPrms(AclEntry entry) {
         String entryPrms = "";
 
@@ -640,31 +560,6 @@ class AccessControlList implements AccessControlListIF {
         else
             type = "U";
         return type;
-    }
-
-    @Override
-    public void setAcl(Map aclAttrs, List aclEntries) throws SignOnException {
-        LOGGER.debug("setAcl() mechanism " + mechanismType);
-        if (mechanismType == TEXT_FILE) {
-            XmlFileReaderWriter.writeACL(aclFileName, aclAttrs, aclEntries);
-        } else if (mechanismType == DB) {
-            try {
-                if (dbPool == null) {
-                    try {
-                        dbPool = new DbModule();
-                    } catch (DbNotSupportedException e) {
-                        dbPool = null;
-                    }
-                }
-
-                if (dbPool != null) {
-                    LOGGER.debug("DbPool is not null going to save entries.");
-                    dbPool.saveAclEntries(name, aclEntries);
-                }
-            } catch (SQLException e) {
-                throw new SignOnException(e, "SQL error saving acl '" + name + "' into DB");
-            }
-        }
     }
 
     @Override
@@ -759,40 +654,16 @@ class AccessControlList implements AccessControlListIF {
     }
 
     /**
-     * Parse ACLS originating from Database.
+     * The mechanism() is legacy from when file and DB  based ACLs were implemented
+     * as the same class.
      */
-    private void readAclsFromDb(String[][] aclRows) throws SignOnException {
-        ArrayList aRows = new ArrayList();
-        //transform the String to an arraylist similar to text files
-        for (int i = 0; i < aclRows.length; i++) {
-            String type = aclRows[i][0];
-            String eType = aclRows[i][1];
-            String principal = aclRows[i][2];
-            String perms = aclRows[i][3];
-
-            if (eType.equals("authenticated") || eType.equals("anonymous")) {
-                principal = eType;
-                eType = "user";
-            }
-            if (eType.equals("owner"))
-                eType = "user"; //not supported yet
-
-            String aRow = eType + ":" + principal + ":" + perms;
-
-            if (!type.equalsIgnoreCase("object")) {
-                aRow = aRow + ":" + type;
-            }
-
-
-            aRows.add(aRow);
-        }
-
-        processAclRows(aRows);
-    }
-
     @Override
     public int mechanism() {
         return mechanismType;
+    }
+
+    protected void setMechanism(int mechanism) {
+        mechanismType = mechanism;
     }
 
     /**

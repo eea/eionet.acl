@@ -58,6 +58,7 @@ public class AccessControlListTest extends ACLDatabaseTestCase {
             assertTrue("Owner name must be \"/whatever\"", acl.isOwner("/whatever"));
 
             assertEquals("expected the ACL's mechanism to be TEXT_FILE", acl.mechanism(), AccessControlListIF.TEXT_FILE);
+            //assertTrue("expected the ACL's mechanism to be TEXT_FILE", acl instanceof AccessControlListFromFile);
         } catch (SignOnException e) {
             fail("Was not expecting this exception: " + e.toString());
         }
@@ -95,6 +96,7 @@ public class AccessControlListTest extends ACLDatabaseTestCase {
         }
         assertNotNull("The freshly created acl must not be null", acl);
         assertEquals("The mechanism of the freshly created acl must be 'database'", acl.mechanism(), AccessControlListIF.DB);
+        //assertTrue("The mechanism of the freshly created acl must be 'database'", acl instanceof AccessControlListFromDB);
 
         try {
             // the freshly created ACL must contain one entry row, created by the DOC principle, and it must give permissions to

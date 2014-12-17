@@ -1,4 +1,4 @@
-/**
+/*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of
@@ -24,8 +24,9 @@
 package eionet.acl;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -40,11 +41,11 @@ public interface DbModuleIF {
      * @param aclPath full ACL path
      * @param owner owner username
      * @param description ACL description
-     * @param hasSubFolders indicates if it is a folder
+     * @param isFolder indicates if it is a folder
      * @throws SQLException if SQL insert fail
      * @throws SignOnException if no permission
      */
-    void addAcl(String aclPath, String owner, String description, boolean hasSubFolders)
+    void addAcl(String aclPath, String owner, String description, boolean isFolder)
             throws SQLException, SignOnException;
 
 
@@ -85,11 +86,13 @@ public interface DbModuleIF {
     void initAcls(HashMap<String, AccessControlListIF> acls) throws SQLException, SignOnException;
 
     /**
-     * Stores ACL Rows in the DB table.
-     * @param aclName full ACL path
+     * Stores ACL in the DB table.
+     *
+     * @param aclName ACL path
+     * @param aclAttrs - A map of attributes. The "description" is an attribute.
      * @param aclEntries list of ACL Entries
      * @throws SQLException if DB operation fails
      * @throws SignOnException if no such ACL with given name
      */
-    void saveAclEntries(String aclName, List aclEntries) throws SQLException, SignOnException;
+    void writeAcl(String aclName, Map<String, String> aclAttrs, List aclEntries) throws SQLException, SignOnException;
 }

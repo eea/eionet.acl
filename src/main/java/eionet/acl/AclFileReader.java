@@ -31,14 +31,17 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.security.Principal;
 import java.security.acl.Group;
 import java.security.acl.Permission;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.Vector;
 
 import eionet.acl.impl.GroupImpl;
 import eionet.acl.impl.PermissionImpl;
@@ -88,8 +91,8 @@ class AclFileReader {
 
         ArrayList rows = new ArrayList();
         try {
-            FileReader fr = new FileReader(fileName) ;
-            BufferedReader  reader  = new BufferedReader(fr) ;
+            FileReader fr = new FileReader(fileName);
+            BufferedReader  reader  = new BufferedReader(fr);
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 String trimmedLine = line.trim();
                 if (trimmedLine.length() > 0)
@@ -118,7 +121,7 @@ class AclFileReader {
         Group grp = new GroupImpl(grpName);
         groups.put(grpName, grp);
 
-        processUsers (ugRow.substring(ugRow.indexOf(":") + 1), grp, users);
+        processUsers(ugRow.substring(ugRow.indexOf(":") + 1), grp, users);
 
     }
 
@@ -133,11 +136,11 @@ class AclFileReader {
         StringTokenizer tokenizer = new StringTokenizer(usrs, ",");
 
         while (tokenizer.hasMoreElements()) {
-            String userName = tokenizer.nextToken() ;
+            String userName = tokenizer.nextToken();
             //l("user=" + userName);
             Principal p = new PrincipalImpl(userName);
 
-            // AclEntry usrEntry = new AclEntryImpl(p) ;
+            // AclEntry usrEntry = new AclEntryImpl(p);
 
             if (!users.containsKey(userName))
                 users.put(userName, p);
@@ -150,13 +153,13 @@ class AclFileReader {
     /**
      * Read the permissions from the plain text permissions file.
      *
-     * @param fileName
+     * @param fileFullPath
      * @param permissions
      * @param prmDescrs
      * @throws SignOnException
      */
-    void readPermissions(String fileName, HashMap permissions, Hashtable prmDescrs) throws SignOnException {
-        ArrayList pRows = readFileRows(fileName);
+    void readPermissions(String fileFullPath, Map permissions, Map prmDescrs) throws SignOnException {
+        ArrayList pRows = readFileRows(fileFullPath);
         for (Iterator i = pRows.iterator(); i.hasNext();) {
             String pRow = (String) i.next();
             processPermissions(pRow, permissions, prmDescrs);
@@ -171,16 +174,16 @@ class AclFileReader {
      * @param prmDescrs
      * @throws SignOnException
      */
-    private void processPermissions(String pRow, HashMap permissions, Hashtable prmDescrs) throws SignOnException {
+    private void processPermissions(String pRow, Map permissions, Map prmDescrs) throws SignOnException {
         //StringTokenizer t = new     StringTokenizer(pRow, ":");
         //permissions = new HashMap();
         //char permission = pRow.charAt(0);
 
         int i = pRow.indexOf(":");
-        String permId = pRow.substring(0,i);
+        String permId = pRow.substring(0, i);
 
 
-        String description = pRow.substring(i+1);
+        String description = pRow.substring(i + 1);
         Permission perm = new PermissionImpl(permId);
 
         //l("putting permission to Hash '" + permId + "'");
@@ -231,6 +234,30 @@ class AclFileReader {
         return fileName.substring(0, pos);
     }
 
+    public void writeAcl(String fileFullPath, Map aclAttrs, List aclEntries) throws SignOnException {
+        ArrayList l = setAclEntries(aclEntries);
+        writeFileRows(fileFullPath, l);
+    }
+
+    public ArrayList setAclEntries(List<Map> aclEntries) throws SignOnException {
+        ArrayList l = new ArrayList();
+
+        for (Map e : aclEntries) {
+            String eType = (String) e.get("type");
+            String eName = (String) e.get("id");
+            String ePerms = (String) e.get("perms");
+
+            String aclType = (String) e.get("acltype");
+
+            String eRow = eType + ":" + eName + ":" + ePerms;
+
+            if (aclType != null && !aclType.equals("object"))
+                eRow += ":" + aclType;
+            l.add(eRow);
+        }
+        return l;
+    }
+
     /**
      * Write ACL to plain text file format.
      *
@@ -258,15 +285,10 @@ class AclFileReader {
             writer.flush();
             writer.close();
 
-            /*     fw.flush();
-             fw.close(); */
-
-            // fRows.add(line);
-
         } catch (FileNotFoundException noe) {
-            throw new SignOnException ("No such file " + fileName);
+            throw new SignOnException("No such file " + fileName);
         } catch (IOException ioe) {
-            throw new SignOnException ("Error reading acls " + ioe.toString());
+            throw new SignOnException("Error reading acls " + ioe.toString());
         }
 
     }

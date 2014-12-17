@@ -41,6 +41,48 @@ import org.junit.Test;
 public class AccessControllerTest extends ACLDatabaseTestCase {
 
     /**
+     * Test that the anonymous user has 'v' permission and not 'c' permission.
+     */
+    @Test
+    public void anonymousOnRoot() throws SignOnException {
+        assertTrue(AccessController.hasPermission(null, "/", "v"));
+        assertFalse(AccessController.hasPermission(null, "/", "x"));
+    }
+
+    /**
+     * Test that enriko has 'x' permission and not 'c' permission.
+     * Enriko is in no group and has no "user" line, so he gets "authenticated".
+     */
+    @Test
+    public void enrikoOnRoot() throws SignOnException {
+        assertTrue(AccessController.hasPermission("enriko", "/", "x"));
+        assertFalse(AccessController.hasPermission("enriko", "/", "c"));
+    }
+
+    /**
+     * Anni is in both "inserters" and "deleters" groups and must have "i" and "d" permissions,
+     * but not "c"
+     */
+    @Test
+    public void anniOnRoot() throws SignOnException {
+        assertTrue(AccessController.hasPermission("anni", "/", "d"));
+        assertTrue(AccessController.hasPermission("anni", "/", "i"));
+        assertFalse(AccessController.hasPermission("anni", "/", "c"));
+    }
+
+    /**
+     * Check that the DCC or DOC isn't used for authorisation.
+     */
+    @Test
+    public void ownerOnDCCTest() throws SignOnException {
+        assertFalse(AccessController.hasPermission("owner", "/dcctest", "x"));
+        assertFalse(AccessController.hasPermission("owner", "/dcctest", "d"));
+        assertTrue(AccessController.hasPermission("owner", "/dcctest", "v"));
+        assertTrue(AccessController.hasPermission("owner", "/dcctest", "c"));
+        assertTrue(AccessController.hasPermission("prj_user3", "/dcctest", "x"));
+    }
+
+    /**
      * Enriko is in no group and has no "user" line, so he gets "authenticated".
      * 
      * @throws SignOnException

@@ -1,4 +1,4 @@
-/**
+/*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of
@@ -60,7 +60,7 @@ class RoleImpl implements Group {
 
             //System.out.println("******** occupants " + occupants);
 
-            for (Iterator i = occupants.iterator(); i.hasNext() ;) {
+            for (Iterator i = occupants.iterator(); i.hasNext();) {
                 String userName = (String) i.next();
                 Principal member = new PrincipalImpl(userName);
 
@@ -107,7 +107,7 @@ class RoleImpl implements Group {
 
     @Override
     public boolean removeMember(Principal user) {
-        if (!isMember (user))
+        if (!isMember(user))
             return false;
         else {
             _members.remove(user);
