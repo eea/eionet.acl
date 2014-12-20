@@ -23,6 +23,7 @@
 
 package eionet.acl;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +88,7 @@ public interface AccessControlListIF {
      * @param aclEntries
      * @throws SignOnException
      */
-    public void setAcl(Map<String, String> aclAttrs, List aclEntries) throws SignOnException;
+    public void setAcl(Map<String, String> aclAttrs, List aclEntries) throws SQLException, SignOnException;
 
     /**
      * Check if the user is the owner of the object.

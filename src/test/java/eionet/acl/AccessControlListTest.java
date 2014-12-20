@@ -26,50 +26,45 @@ public class AccessControlListTest extends ACLDatabaseTestCase {
      * XML format, because the tests here are run on _whatever.acl, which is indeed in the old format.
      */
     @Test
-    public void testAclsInFiles() {
+    public void testAclsInFiles() throws Exception {
 
+        AccessControlListIF acl = AccessController.getAcl("/whatever");
+        assertNotNull("Acl \"/whatever\" must not be null", acl);
+
+        Vector entryRows = acl.getEntryRows();
+        assertNotNull("acl.getEntryRows() must not be null", entryRows);
+        assertEquals("expected size of acl.getEntryRows() is 3", entryRows.size(), 3);
+
+        String description = acl.getDescription();
+        assertNotNull("acl.getDescription() must not be null", description);
+        assertEquals("acl.getDescription() must equal to \"whatever_description\"", description, "whatever_description");
+
+        List<HashMap<String, String>> docAndDdcEntries = acl.getDOCAndDCCEntries();
+        assertNotNull("acl.getDocEntries() must not be null", docAndDdcEntries);
+        assertEquals("acl.getDocEntries() size must be 1", docAndDdcEntries.size(), 1);
+
+        assertFalse("jaanus2 must not have permission 'v'", acl.checkPermission("jaanus2", "v"));
+
+        boolean unknownPermission = false;
         try {
-            AccessControlListIF acl = AccessController.getAcl("/whatever");
-            assertNotNull("Acl \"/whatever\" must not be null", acl);
-
-            Vector entryRows = acl.getEntryRows();
-            assertNotNull("acl.getEntryRows() must not be null", entryRows);
-            assertEquals("expected size of acl.getEntryRows() is 3", entryRows.size(), 3);
-
-            String description = acl.getDescription();
-            assertNotNull("acl.getDescription() must not be null", description);
-            assertEquals("acl.getDescription() must equal to \"whatever_description\"", description, "whatever_description");
-
-            List<HashMap<String, String>> docAndDdcEntries = acl.getDOCAndDCCEntries();
-            assertNotNull("acl.getDocEntries() must not be null", docAndDdcEntries);
-            assertEquals("acl.getDocEntries() size must be 1", docAndDdcEntries.size(), 1);
-
-            assertFalse("jaanus2 must not have permission 'v'", acl.checkPermission("jaanus2", "v"));
-
-            boolean unknownPermission = false;
-            try {
-                acl.checkPermission("jaanus2", "a");
-            } catch (SignOnException e) {
-                if (e.toString().toLowerCase().indexOf("unknown permission") > 0)
-                    unknownPermission = true;
-            }
-            assertTrue("Was expecting 'a' to be unknown permission", unknownPermission);
-
-            assertTrue("Owner name must be \"/whatever\"", acl.isOwner("/whatever"));
-
-            assertEquals("expected the ACL's mechanism to be TEXT_FILE", acl.mechanism(), AccessControlListIF.TEXT_FILE);
-            //assertTrue("expected the ACL's mechanism to be TEXT_FILE", acl instanceof AccessControlListFromFile);
+            acl.checkPermission("jaanus2", "a");
         } catch (SignOnException e) {
-            fail("Was not expecting this exception: " + e.toString());
+            if (e.toString().toLowerCase().indexOf("unknown permission") > 0)
+                unknownPermission = true;
         }
+        assertTrue("Was expecting 'a' to be unknown permission", unknownPermission);
+
+        assertTrue("Owner name must be \"/whatever\"", acl.isOwner("/whatever"));
+
+        assertEquals("expected the ACL's mechanism to be TEXT_FILE", acl.mechanism(), AccessControlListIF.TEXT_FILE);
     }
 
     /**
-     *
+     * Test that you can add an ACL called /whatever/123
      *
      */
     @Test
-    public void testAclsInDatabase() {
+    public void testAclsInDatabase() throws Exception {
 
         String aclPath = "/whatever/123";
 
@@ -96,7 +91,6 @@ public class AccessControlListTest extends ACLDatabaseTestCase {
         }
         assertNotNull("The freshly created acl must not be null", acl);
         assertEquals("The mechanism of the freshly created acl must be 'database'", acl.mechanism(), AccessControlListIF.DB);
-        //assertTrue("The mechanism of the freshly created acl must be 'database'", acl instanceof AccessControlListFromDB);
 
         try {
             // the freshly created ACL must contain one entry row, created by the DOC principle, and it must give permissions to
@@ -125,10 +119,14 @@ public class AccessControlListTest extends ACLDatabaseTestCase {
             e.printStackTrace();
             fail("Was not expecting this exception: " + e.toString());
         }
+        // Clean up
+        AccessController.removeAcl(aclPath);
+        assertFalse(AccessController.aclExists(aclPath));
     }
 
     /**
      * Constructs a hashtable representing an ACL entry.
+     *
      * @param principalType principal type
      * @param principalId principal ID
      * @param permissions permissions in CSV format
@@ -207,7 +205,9 @@ public class AccessControlListTest extends ACLDatabaseTestCase {
         assertTrue(prj1Acl.checkPermission("andrei", "v"));
         assertTrue(prj1Acl.checkPermission("andrei", "x"));
         assertTrue(!prj1Acl.checkPermission("andrei", "u"));
-
+        // Clean up
+        AccessController.removeAcl(prj1);
+        assertFalse(AccessController.aclExists(prj1));
     }
 
     /**
@@ -252,33 +252,37 @@ public class AccessControlListTest extends ACLDatabaseTestCase {
 
         assertTrue("sub1 file not owner got D", !prj1File1Acl.checkPermission("prj_user3", "d"));
         assertTrue("sub1 file anonymous got D", !prj1File1Acl.checkPermission(null, "d"));
-    }
 
-    /**
-     * tests on adding acl to the second sub-level.
-     * @throws Exception if error happens
-     */
-    @Test
-    public void testAddSubLevel2Projects() throws Exception {
-        String prj1 = "/dcctest/prjB/subA2/level2A";
-        String prj2 = "/dcctest/prjB/subA2/level2B";
+        // tests on adding acl to the second sub-level.
+        String prj12lA = "/dcctest/prjB/subA2/level2A";
+        String prj12lB = "/dcctest/prjB/subA2/level2B";
 
-        AccessController.addAcl(prj1, "pm1", "ProjectB level2 A", true);
-        AccessController.addAcl(prj2, "pm2", "ProjectB level2 B", true);
+        AccessController.addAcl(prj12lA, "pm1", "ProjectB level2 A", true);
+        AccessController.addAcl(prj12lB, "pm2", "ProjectB level2 B", true);
 
-        AccessControlListIF prj1Acl = AccessController.getAcl(prj1);
-        AccessControlListIF prj2Acl = AccessController.getAcl(prj2);
+        AccessControlListIF prj12lAAcl = AccessController.getAcl(prj12lA);
+        AccessControlListIF prj12lBAcl = AccessController.getAcl(prj12lB);
 
-        assertTrue("DDC entires not copied to 2nd sub level  ", prj1Acl.getDOCAndDCCEntries().size() == 6);
-        assertTrue("DDC entires not copied to 2nd sub level  ", prj2Acl.getDOCAndDCCEntries().size() == 6);
+        assertTrue("DDC entires not copied to 2nd sub level  ", prj12lAAcl.getDOCAndDCCEntries().size() == 6);
+        assertTrue("DDC entires not copied to 2nd sub level  ", prj12lBAcl.getDOCAndDCCEntries().size() == 6);
 
-        assertTrue("sub1 owner not got C", prj1Acl.checkPermission("pm1", "c"));
-        assertTrue("sub1 not owner got C", !prj1Acl.checkPermission("pm2", "c"));
+        assertTrue("sub1 owner not got C", prj12lAAcl.checkPermission("pm1", "c"));
+        assertTrue("sub1 not owner got C", !prj12lAAcl.checkPermission("pm2", "c"));
 
-        assertTrue("sub1 not got i", prj1Acl.checkPermission("pm2", "i"));
-        assertTrue("sub1 not got i", prj2Acl.checkPermission("pm1", "i"));
+        assertTrue("sub1 not got i", prj12lAAcl.checkPermission("pm2", "i"));
+        assertTrue("sub1 not got i", prj12lBAcl.checkPermission("pm1", "i"));
 
-        assertTrue("sub1 not got d", prj2Acl.checkPermission("pm2", "d"));
+        assertTrue("sub1 not got d", prj12lBAcl.checkPermission("pm2", "d"));
+
+        // Clean up
+        AccessController.removeAcl(prj12lA);
+        AccessController.removeAcl(prj12lB);
+        AccessController.removeAcl(prj11);
+        AccessController.removeAcl(prj12);
+        AccessController.removeAcl(prj1File1);
+        AccessController.removeAcl(prj1File2);
+        AccessController.removeAcl(prj1);
+        assertFalse(AccessController.aclExists(prj1));
     }
 
     /**
@@ -307,11 +311,13 @@ public class AccessControlListTest extends ACLDatabaseTestCase {
         assertTrue(acl.checkPermission("john", "x"));
         assertTrue(acl.checkPermission("john", "v"));
 
+        // Clean up
+        AccessController.removeAcl(prjName);
+        assertFalse(AccessController.aclExists(prjName));
     }
 
     /**
-     * Create an ACL that does not have folder system all permissions must remain same but DDC and DOC are not copied.
-     *
+     * create an ACL that does not have folder system all permissions must remain sam but DDC and DOC are not copied.
      * @throws Exception if error
      */
     @Test
@@ -336,6 +342,9 @@ public class AccessControlListTest extends ACLDatabaseTestCase {
         assertTrue(acl.checkPermission("john", "x"));
         assertTrue(acl.checkPermission("john", "v"));
 
+        // Clean up
+        AccessController.removeAcl(prjName);
+        assertFalse(AccessController.aclExists(prjName));
     }
 
     /**
@@ -356,6 +365,9 @@ public class AccessControlListTest extends ACLDatabaseTestCase {
         assertTrue(folderAcl.getEntryRows().size() == 4);
         assertTrue(folderAcl.getDOCAndDCCEntries().size() == 2);
 
+        // Clean up
+        AccessController.removeAcl(folder);
+        assertFalse(AccessController.aclExists(folder));
     }
 
 }

@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Vector;
+import java.lang.reflect.Constructor;
 
 import eionet.acl.impl.PermissionImpl;
 
@@ -46,11 +47,10 @@ public final class AccessController {
     /** System properties. */
     private static ResourceBundle props;
 
-    /** File operations. */
-    private static FileModule fileStorage;
+    private static String persistenceDriver;
 
-    /** Module of DB operations. */
-    private static DbModuleIF dbModule;
+    /** File operations. */
+    private static Persistence fileStorage;
 
     /** Permission to indicate ownership for the ACL. */
     static String ownerPrm = "";
@@ -106,6 +106,7 @@ public final class AccessController {
 
     /**
      * Returns ACL with the given name.
+     *
      * @param name full ACL path
      * @return ACL
      * @throws SignOnException if the ACL does not exist
@@ -125,6 +126,7 @@ public final class AccessController {
 
     /**
      * Reads ACL entries from the files and database if database supported.
+     *
      * @throws SignOnException if error in reading
      */
     private static void initAcls() throws SignOnException {
@@ -138,18 +140,10 @@ public final class AccessController {
             prmDescrs = new Hashtable();
             acls = new HashMap();
 
-            getFileStorage();
+            getPersistence();
             fileStorage.readGroups(groups, users);
             fileStorage.readPermissions(permissions, prmDescrs);
             fileStorage.initAcls(acls);
-
-            //returns null if DB is not supported, no exception thrown
-            DbModuleIF db = getDbModule();
-
-            // DB ACLS may be not supported then they are just ignored
-            if (db != null) {
-                db.initAcls(acls);
-            }
         } catch (Exception e) {
             reset(); // otherwise some acls might remain successfylly in session, others not, causing confusion in user
             e.printStackTrace(System.out);
@@ -166,6 +160,7 @@ public final class AccessController {
 
     /**
      * Instance of uit.properties file.
+     *
      * @return REsourceBundle of the properties
      * @throws SignOnException if no file found.
      */
@@ -182,6 +177,7 @@ public final class AccessController {
 
     /**
      * Reads values from the property file.
+     *
      * @throws SignOnException if property is missing.
      */
     private static void readProperties() throws SignOnException {
@@ -190,9 +186,7 @@ public final class AccessController {
 
         // read mandatory properties
         try {
-            //localgroupsFileName = props.getString("application.localgroups.file");
 
-            //aclsFolderName = props.getString("application.acl.folder");
             ownerPrm = props.getString("acl.owner.permission");
             // pre-defined entry name for anonymous access
             anonymousEntry = props.getString("acl.anonymous.access");
@@ -202,6 +196,12 @@ public final class AccessController {
 
             if (props.containsKey("acl.defaultdoc.permissions")) {
                 defaultDocAndDccPermissions = props.getString("acl.defaultdoc.permissions");
+            }
+
+            if (props.containsKey("acl.persistence.provider")) {
+                persistenceDriver = props.getString("acl.persistence.provider");
+            } else {
+                persistenceDriver = "eionet.acl.PersistenceMix";
             }
 
         } catch (MissingResourceException mre) {
@@ -215,6 +215,7 @@ public final class AccessController {
 
     /**
      * Local groups of the system.
+     *
      * @return hash with groups
      * @throws SignOnException if reading fails
      */
@@ -233,6 +234,7 @@ public final class AccessController {
 
     /**
      * Members of the group.
+     *
      * @param g local group
      * @return Array of members
      */
@@ -284,6 +286,7 @@ public final class AccessController {
     /**
      * Returns permissions of the user in all ACls.
      * Format: ACLName:p1,ACLName:p2,AclName2:p1,
+     *
      * @param user username
      * @return permissions of user in required format
      * @throws SignOnException if reading fails
@@ -307,6 +310,7 @@ public final class AccessController {
 
     /**
      * Parse permissions in an array and composes CSV format.
+     *
      * @param aclName full ACL path
      * @param aclPerms Array of ACL permissions
      * @return string in format aclName:perm1,perm2,...,permN
@@ -325,6 +329,7 @@ public final class AccessController {
 
     /**
      * Read groups from an XML file and set to the controller.
+     *
      * @param groups hash of the groups
      * @throws SignOnException if file writing fails
      */
@@ -335,6 +340,7 @@ public final class AccessController {
 
     /**
      * HARD-CODED permissions for ACL "localgroups".
+     *
      * @return permissions in a hash in required format
      */
     static HashMap groupPermissions() {
@@ -352,30 +358,18 @@ public final class AccessController {
      *
      * @return file module
      */
-    static FileModule getFileStorage() {
+    static Persistence getPersistence() {
         if (fileStorage == null) {
-            fileStorage = new FileModule(props);
+            try {
+            Class fsClass = Class.forName(persistenceDriver);
+            Constructor constructor = fsClass.getConstructor(ResourceBundle.class);
+            fileStorage = (Persistence) constructor.newInstance(props);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            //fileStorage = new PersistenceMix(props);
         }
         return fileStorage;
-    }
-
-    /**
-     * Returns the DB module for DB operations.
-     * If DB connection is not supported in this application or error in DB  connection returns null
-     * @return database module
-     */
-    static DbModuleIF getDbModule() {
-
-        if (dbModule == null) {
-            try {
-                dbModule = new DbModule();
-            } catch (DbNotSupportedException e) {
-                return null;
-            }
-        }
-
-        return dbModule;
-
     }
 
     /**
@@ -391,7 +385,7 @@ public final class AccessController {
     }
 
     /**
-     * Adds a new ACL. ACLs can be added only to DB tables.
+     * Adds a new ACL.
      *
      * @param aclPath full ACL path "/datasets/1234"
      * @param owner owner username
@@ -405,15 +399,14 @@ public final class AccessController {
             throw new SignOnException("ACL, named " + aclPath + " already exists.");
         }
 
-        // ACLs can be added only to DB tables
         try {
-            DbModuleIF dbm = getDbModule();
+            Persistence dbm = getPersistence();
             // if acls in database are not supported, ignore
             if (dbm != null) {
                 dbm.addAcl(aclPath, owner, description, isFolder);
             }
         } catch (Exception e) {
-            throw new SignOnException("DB operation failed : " + e.toString());
+            throw new SignOnException("Operation failed : " + e.toString());
         }
 
         // reset the ACL container
@@ -435,13 +428,8 @@ public final class AccessController {
 
         AccessControlListIF acl = AccessController.getAcl(aclPath);
 
-        // if the ACL is not held in DB table this API function cannot be used
-        if (!(acl instanceof AccessControlListFromDB)) {
-            throw new SignOnException("This ACL cannot be removed by this method.");
-        }
-
         try {
-            DbModuleIF dbm = getDbModule();
+            Persistence dbm = getPersistence();
             // if acls in database are not supported, ignore
             if (dbm != null) {
                 dbm.removeAcl(aclPath);
@@ -471,13 +459,8 @@ public final class AccessController {
         }
         AccessControlListIF acl = AccessController.getAcl(aclPath);
 
-        // if the ACL is not held in DB table this API function cannot be used
-        if (acl instanceof AccessControlListFromFile) {
-            throw new SignOnException("This ACL cannot be renamed by this method.");
-        }
-
         try {
-            DbModuleIF dbm = getDbModule();
+            Persistence dbm = getPersistence();
             // if acls in database are not supported, ignore
             if (dbm != null) {
                 dbm.renameAcl(aclPath, newAclPath);

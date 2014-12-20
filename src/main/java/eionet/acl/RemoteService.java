@@ -32,6 +32,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
+import java.sql.SQLException;
 
 import org.apache.log4j.Logger;
 
@@ -323,7 +324,11 @@ public class RemoteService {
         if (aclDescription != null)
             aclAttrs.put("description", aclDescription);
 
-        acl.setAcl(aclAttrs.size() == 0 ? null : aclAttrs, aclEntries);
+        try {
+            acl.setAcl(aclAttrs.size() == 0 ? null : aclAttrs, aclEntries);
+        } catch (SQLException e) {
+            throw new SignOnException("Database error");
+        }
         LOGGER.debug("ACL " + aclName + " entries set successfully.");
 
         AccessController.reset();

@@ -15,29 +15,36 @@
  * The Original Code code was developed for the European
  * Environment Agency (EEA) under the IDA/EINRC framework contract.
  *
- * Copyright (C) 2000-2002 by European Environment Agency.  All
+ * Copyright (C) 2000-2014 by European Environment Agency.  All
  * Rights Reserved.
  *
- * Original Code: Kaido Laine (TietoEnator)
  */
 
 package eionet.acl;
 
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 
 /**
+ * Interface for persistence layer.
  *
- * Database methods for dynamically editable ACLs.
- *
- * @author Kaido Laine
+ * @author Søren Roug
  */
-public interface DbModuleIF {
+public interface Persistence {
+
+    /**
+     * Read permissions from the files.
+     *
+     * @throws SignOnException if reading fails
+     */
+    void readPermissions(HashMap permissions, Hashtable prmDescrs) throws SignOnException;
 
     /**
      * Adds new ACL to the database.
+     *
      * @param aclPath full ACL path
      * @param owner owner username
      * @param description ACL description
@@ -86,13 +93,26 @@ public interface DbModuleIF {
     void initAcls(HashMap<String, AccessControlListIF> acls) throws SQLException, SignOnException;
 
     /**
-     * Stores ACL in the DB table.
-     *
-     * @param aclName ACL path
-     * @param aclAttrs - A map of attributes. The "description" is an attribute.
+     * Stores ACL Rows in the DB table.
+     * @param aclName full ACL path
      * @param aclEntries list of ACL Entries
      * @throws SQLException if DB operation fails
      * @throws SignOnException if no such ACL with given name
      */
-    void writeAcl(String aclName, Map<String, String> aclAttrs, List aclEntries) throws SQLException, SignOnException;
+    void writeAcl(String aclName, Map<String, String> aclAttrs, List aclEntries) throws SignOnException;
+
+    /**
+     * Read local groups from the files.
+     *
+     * @throws SQLException if error in reading from database
+     * @throws SignOnException if reading fails
+     */
+    void readGroups(HashMap groups, HashMap users) throws SQLException, SignOnException;
+
+    /**
+     * Write local groups to file.
+     *
+     * @throws SignOnException if writing fails
+     */
+    void writeGroups(Hashtable groups) throws SignOnException;
 }

@@ -227,6 +227,7 @@ class AclFileReader {
      * @param aclFile
      * @return the name of the ACL
      */
+    @Deprecated
     String getAclName(File aclFile) {
         String fileName = aclFile.getName();
         int pos = fileName.indexOf(".acl");

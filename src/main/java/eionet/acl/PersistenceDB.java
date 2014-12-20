@@ -37,6 +37,8 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import eionet.acl.impl.AclImpl;
+import eionet.acl.impl.PrincipalImpl;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -46,19 +48,19 @@ import org.apache.log4j.Logger;
  * DB operations implementation.
  * Expects two tables in the database: ACLS and ACL_ROWS.
  */
-public class DbModule implements DbModuleIF {
+public class PersistenceDB implements Persistence {
 
     /** logger instance. */
-    private static final Logger LOGGER = Logger.getLogger(DbModule.class);
+    private static final Logger LOGGER = Logger.getLogger(PersistenceDB.class);
 
     DatabaseConnection dbConnection = null;
     ResourceBundle props = null;
     String dbUrl, dbDriver, dbUser, dbPwd;
 
-    DbModule() throws DbNotSupportedException {
+    PersistenceDB(ResourceBundle props) throws DbNotSupportedException {
 
+        this.props = props;
         try {
-            props = AccessController.getProperties();
             if (props != null) {
                 dbUrl = props.getString("db.url");
                 dbDriver = props.getString("db.driver");
@@ -517,11 +519,63 @@ public class DbModule implements DbModuleIF {
             sql = "SELECT TYPE, ENTRY_TYPE, PRINCIPAL, PERMISSIONS FROM ACL_ROWS WHERE ACL_ID=" + aclId;
             String[][] aclRows = executeStringQuery(sql);
 
-            AccessControlListIF acl = new AccessControlListFromDB(aclName, owner, description, aclRows);
+            AccessControlList acl = readAclDB(aclName, owner, description, aclRows);
 
             acls.put(aclName, acl);
         }
 
+    }
+
+    /**
+     * Construct ACL from the database query.
+     */
+    private AccessControlList readAclDB(String name, String ownerName, String description, String[][] aclRows)
+            throws SignOnException {
+        AccessControlList acl = new AccessControlList(this);
+
+        acl.setMechanism(AccessControlListIF.DB);
+        //we have to set a fake owner if there is no owner specified in the ACL
+        if (ownerName == null || ownerName.equals(""))
+            acl.owner = new PrincipalImpl(name);
+        else
+            acl.owner = new PrincipalImpl(ownerName);
+
+        acl.acl = new AclImpl(acl.owner, name);
+        acl.description = description;
+        acl.name = name;
+
+        readAclRowsFromDb(aclRows, acl);
+        return acl;
+    }
+
+
+    /**
+     * Parse ACL rows originating from Database.
+     */
+    private void readAclRowsFromDb(String[][] aclRows, AccessControlList acl) throws SignOnException {
+        ArrayList aRows = new ArrayList();
+        //transform the String to an arraylist similar to text files
+        for (int i = 0; i < aclRows.length; i++) {
+            String type = aclRows[i][0];
+            String eType = aclRows[i][1];
+            String principal = aclRows[i][2];
+            String perms = aclRows[i][3];
+
+            if (eType.equals("authenticated") || eType.equals("anonymous")) {
+                principal = eType;
+                eType = "user";
+            }
+            if (eType.equals("owner"))
+                eType = "user"; //not supported yet
+
+            String aRow = eType + ":" + principal + ":" + perms;
+
+            if (!type.equalsIgnoreCase("object")) {
+                aRow = aRow + ":" + type;
+            }
+            aRows.add(aRow);
+        }
+        acl.processAclRows(aRows);
     }
 
     /**
@@ -535,54 +589,59 @@ public class DbModule implements DbModuleIF {
      * @throws SignOnException if no such ACL with given name
      */
     @Override
-    public void writeAcl(String aclName, Map<String, String> aclAttrs, List aclEntries) throws SQLException, SignOnException {
+    public void writeAcl(final String aclName, Map<String, String> aclAttrs, List aclEntries) throws SignOnException {
 
         ArrayList aclEntriesAsRows = aclEntriesToFileRows(aclEntries);
         // split parent and acl name
         String parentName = null;
+        String leafName = null;
         if (!aclName.equals("/")) {
             if (aclName.lastIndexOf("/") == 0) {
                 parentName = "/";
-                aclName = aclName.substring(1);
+                leafName = aclName.substring(1);
             } else {
                 parentName = aclName.substring(0, aclName.lastIndexOf("/"));
-                aclName = aclName.substring(aclName.lastIndexOf("/") + 1);
+                leafName = aclName.substring(aclName.lastIndexOf("/") + 1);
             }
         }
 
-        String sql = "SELECT ACL_ID, ACL_NAME, DESCRIPTION FROM ACLS WHERE ACL_NAME='" + aclName + "' AND "
-                + " PARENT_NAME='" + parentName + "'";
-
-        String aclId;
-        String[][] r = executeStringQuery(sql);
-        if (r.length == 0) {
-            throw new SignOnException("No such ACL=" + parentName + "/" + aclName);
-        } else {
-            aclId = r[0][0];
-        }
-
-        // update status -> backup rows
-        sql = "UPDATE ACL_ROWS SET STATUS='0' WHERE ACL_ID=" + aclId;
-        executeUpdate(sql);
-        LOGGER.debug("Backup done, entries in the ACL " + r.length);
-        // process rows in the list, add into DB
         try {
-            LOGGER.debug("Going to save entries, sizeL " + aclEntriesAsRows.size());
-            for (int i = 0; i < aclEntriesAsRows.size(); i++) {
-                saveAclEntry(aclId, aclEntriesAsRows.get(i).toString());
-            }
-        } catch (Exception e) {
-            //recover old rows
-            sql = "DELETE FROM ACL_ROWS WHERE STATUS='1' AND ACL_ID=" + aclId;
-            executeUpdate(sql);
-            sql = "UPDATE ACL_ROWS SET STATUS='1' WHERE ACL_ID=" + aclId;
-            executeUpdate(sql);
-            throw new SignOnException("Failed to save acl entry for ACL_ID=" + aclId + ", " + e.toString());
-        }
+            String sql = "SELECT ACL_ID, ACL_NAME, DESCRIPTION FROM ACLS WHERE ACL_NAME='"
+                    + leafName + "' AND " + " PARENT_NAME='" + parentName + "'";
 
-        // success, delete old rows, change status of new ones
-        sql = "DELETE FROM ACL_ROWS WHERE STATUS='0' AND ACL_ID=" + aclId;
-        executeUpdate(sql);
+            String aclId;
+            String[][] r = executeStringQuery(sql);
+            if (r.length == 0) {
+                throw new SignOnException("No such ACL=" + aclName);
+            } else {
+                aclId = r[0][0];
+            }
+
+            // update status -> backup rows
+            sql = "UPDATE ACL_ROWS SET STATUS='0' WHERE ACL_ID=" + aclId;
+                executeUpdate(sql);
+            LOGGER.debug("Backup done, entries in the ACL " + r.length);
+            // process rows in the list, add into DB
+            try {
+                LOGGER.debug("Going to save entries, size " + aclEntriesAsRows.size());
+                for (int i = 0; i < aclEntriesAsRows.size(); i++) {
+                    saveAclEntry(aclId, aclEntriesAsRows.get(i).toString());
+                }
+            } catch (Exception e) {
+                //recover old rows
+                sql = "DELETE FROM ACL_ROWS WHERE STATUS='1' AND ACL_ID=" + aclId;
+                executeUpdate(sql);
+                sql = "UPDATE ACL_ROWS SET STATUS='1' WHERE ACL_ID=" + aclId;
+                executeUpdate(sql);
+                throw new SignOnException("Failed to save acl entry for ACL_ID=" + aclId + ", " + e.toString());
+            }
+
+            // success, delete old rows, change status of new ones
+            sql = "DELETE FROM ACL_ROWS WHERE STATUS='0' AND ACL_ID=" + aclId;
+            executeUpdate(sql);
+        } catch (SQLException e) {
+            throw new SignOnException("Failed to save acl entry for ACL_ID=" + aclName + ", " + e.toString());
+        }
     }
 
     /**
@@ -706,7 +765,18 @@ public class DbModule implements DbModuleIF {
 
     }
 
-    public void readGroups(Map groups, Map users) throws SignOnException {
+    @Override
+    public void readGroups(HashMap groups, HashMap users) throws SQLException, SignOnException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeGroups(Hashtable groups) throws SignOnException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void readPermissions(HashMap permissions, Hashtable prmDescrs) throws SignOnException {
         throw new UnsupportedOperationException();
     }
 }

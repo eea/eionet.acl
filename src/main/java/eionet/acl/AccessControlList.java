@@ -15,7 +15,7 @@
  * The Original Code code was developed for the European
  * Environment Agency (EEA) under the IDA/EINRC framework contract.
  *
- * Copyright (C) 2000-2002 by European Environment Agency.  All
+ * Copyright (C) 2000-2014 by European Environment Agency.  All
  * Rights Reserved.
  *
  * Original Code: Kaido Laine (TietoEnator)
@@ -57,8 +57,10 @@ import eionet.acl.impl.PrincipalImpl;
 /**
  * ACL implementation. Works on the ACL object, and can read/write them, but
  * does not create new ACLs.
+ * Since it references members of AccessController in the constructor, it
+ * requires that AccessController has been initialised.
  */
-abstract class AccessControlList implements AccessControlListIF {
+class AccessControlList implements AccessControlListIF {
 
     //where the ACL entries are held: text file, DB, ...
     /**
@@ -73,9 +75,11 @@ abstract class AccessControlList implements AccessControlListIF {
     private String authUserName;
 
     /** Name of ACL object. */
-    protected String name;
-    protected String description;
+    String name;
+    /** Description of ACL object. */
+    String description;
 
+    /** Groups are retrieved from the AccessController. */
     private HashMap groups;
     private HashMap users;
     private HashMap permissions;
@@ -87,11 +91,11 @@ abstract class AccessControlList implements AccessControlListIF {
      */
     private List<HashMap<String, String>> docAndDdcEntries;
 
-    protected Acl acl;
-    protected Principal owner;
+    Acl acl;
+    Principal owner;
     private AclFileReader fReader;
-    private DbModuleIF dbPool;
 
+    private Persistence storageManager;
 
     /**
      * Enum for ACL entry type.
@@ -115,7 +119,8 @@ abstract class AccessControlList implements AccessControlListIF {
     /**
      * Initialise variables for ACL not depending on the mechanism.
      */
-    protected AccessControlList() {
+    AccessControlList(Persistence storage) {
+        storageManager = storage;
         groups = AccessController.groups;
         users = AccessController.users;
 
@@ -562,6 +567,13 @@ abstract class AccessControlList implements AccessControlListIF {
         return type;
     }
 
+
+    @Override
+    public void setAcl(Map<String, String> aclAttrs, List aclEntries) throws SignOnException {
+        LOGGER.debug("setAcl()");
+        storageManager.writeAcl(name, aclAttrs, aclEntries);
+    }
+
     @Override
     public void setAclEntries(Vector aclEntries) throws SignOnException {
         setAcl(null, aclEntries);
@@ -683,4 +695,7 @@ abstract class AccessControlList implements AccessControlListIF {
         return false;
     }
 
+    public String toString() {
+        return "Name: " + name + "\n" + acl.toString();
+    }
 }
