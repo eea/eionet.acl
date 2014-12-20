@@ -36,12 +36,10 @@ import java.security.acl.Permission;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 import eionet.acl.impl.GroupImpl;
 import eionet.acl.impl.PermissionImpl;

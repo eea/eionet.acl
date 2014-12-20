@@ -38,25 +38,25 @@ import java.util.Vector;
 public interface AccessControlListIF {
 
     /** ACL comes from text file. */
-    public static final int TEXT_FILE = 1;
+    static final int TEXT_FILE = 1;
     /** ACL comes from database. */
-    public static final int DB = 2;
+    static final int DB = 2;
 
     /**
      * Check, if user has this permission.
      */
-    public boolean checkPermission(String user, String permission) throws SignOnException;
+    boolean checkPermission(String user, String permission) throws SignOnException;
 
     /**
      * Return array of permissions of user.
      */
-    public Vector getPermissions(String user) throws SignOnException;
+    Vector getPermissions(String user) throws SignOnException;
 
     /**
      * Return ACL entries in ARRAY.
      * [localgroup|circarole|user]:name:p1,p2,...,pN
      */
-    public Vector getEntryRows( ) throws SignOnException;
+    Vector getEntryRows( ) throws SignOnException;
 
     /**
      * Returns DOC and DCC entries of the ACL.
@@ -71,7 +71,7 @@ public interface AccessControlListIF {
      *
      * @return one of AccessControlListIF.TEXT_FILE or AccessControlListIF.DB
      */
-    public int mechanism();
+    int mechanism();
 
     /**
      * Set ACL entries.
@@ -79,7 +79,7 @@ public interface AccessControlListIF {
      * @param aclEntries
      * @throws SignOnException
      */
-    public void setAclEntries(Vector aclEntries) throws SignOnException;
+    void setAclEntries(Vector aclEntries) throws SignOnException;
 
     /**
      * Set ACL.
@@ -88,7 +88,7 @@ public interface AccessControlListIF {
      * @param aclEntries
      * @throws SignOnException
      */
-    public void setAcl(Map<String, String> aclAttrs, List aclEntries) throws SQLException, SignOnException;
+    void setAcl(Map<String, String> aclAttrs, List aclEntries) throws SQLException, SignOnException;
 
     /**
      * Check if the user is the owner of the object.
@@ -97,17 +97,17 @@ public interface AccessControlListIF {
      * @return true if the user is the owner of the object.
      * @throws SignOnException
      */
-    public boolean isOwner(String user) throws SignOnException;
+    boolean isOwner(String user) throws SignOnException;
 
     /**
      * Get the name (a.k.a. path) of the ACL.
      * @return the path
      */
-    public String getName();
+    String getName();
 
     /**
      * Get the human readable description of the ACL.
      * @return the description
      */
-    public String getDescription();
+    String getDescription();
 }

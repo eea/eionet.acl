@@ -23,9 +23,6 @@
 
 package eionet.acl;
 
-import eionet.directory.DirServiceException;
-import eionet.directory.DirectoryService;
-
 /**
  * Implementation of user class for internal purposes.
  *

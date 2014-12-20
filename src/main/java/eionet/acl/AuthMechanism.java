@@ -23,7 +23,6 @@
 
 package eionet.acl;
 
-import java.io.FileNotFoundException;
 import eionet.directory.DirectoryService;
 import eionet.directory.DirServiceException;
 

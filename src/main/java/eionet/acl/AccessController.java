@@ -426,8 +426,6 @@ public final class AccessController {
             throw new SignOnException("No such ACL: " + aclPath);
         }
 
-        AccessControlListIF acl = AccessController.getAcl(aclPath);
-
         try {
             Persistence dbm = getPersistence();
             // if acls in database are not supported, ignore
@@ -457,7 +455,6 @@ public final class AccessController {
         if (AccessController.getAcls().containsKey(newAclPath)) {
             throw new SignOnException("ACL with new name already exists: " + newAclPath);
         }
-        AccessControlListIF acl = AccessController.getAcl(aclPath);
 
         try {
             Persistence dbm = getPersistence();

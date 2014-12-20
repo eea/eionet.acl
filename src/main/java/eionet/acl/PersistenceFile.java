@@ -59,14 +59,10 @@ public class PersistenceFile implements Persistence {
     private AclFileReader fileReader;
 
 
-    /** Configuration properties. */
-    private ResourceBundle props = null;
-
     /**
      * Constructor.
      */
     public PersistenceFile(ResourceBundle props) {
-        this.props = props;
         permissionsFileName = props.getString("application.permissions.file");
         localgroupsFileName = props.getString("application.localgroups.file");
         aclsFolderName = props.getString("application.acl.folder");

@@ -22,15 +22,12 @@
  */
 
 package eionet.acl;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 import org.xml.sax.SAXException;
-import org.xml.sax.InputSource;
 
 import java.io.FileNotFoundException;
 import org.w3c.dom.*;
-import java.util.MissingResourceException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;

@@ -24,15 +24,12 @@
 
 package eionet.acl;
 
-import java.io.File;
-import java.io.IOException;
 import java.security.Principal;
 import java.security.acl.Acl;
 import java.security.acl.AclEntry;
 import java.security.acl.Group;
 import java.security.acl.NotOwnerException;
 import java.security.acl.Permission;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -48,7 +45,6 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 
 import eionet.acl.impl.AclEntryImpl;
-import eionet.acl.impl.AclImpl;
 import eionet.acl.impl.GroupImpl;
 import eionet.acl.impl.PrincipalImpl;
 
@@ -93,7 +89,6 @@ class AccessControlList implements AccessControlListIF {
 
     Acl acl;
     Principal owner;
-    private AclFileReader fReader;
 
     private Persistence storageManager;
 

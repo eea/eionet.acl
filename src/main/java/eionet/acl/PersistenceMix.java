@@ -23,20 +23,13 @@
 
 package eionet.acl;
 
-import java.io.IOException;
-import java.io.File;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import java.util.StringTokenizer;
-import java.util.Vector;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 
@@ -52,10 +45,8 @@ class PersistenceMix implements Persistence {
     private PersistenceFile fileModule;
     private PersistenceDB dbModule;
 
-    private ResourceBundle props = null;
 
     public PersistenceMix(ResourceBundle props) {
-        this.props = props;
         fileModule = new PersistenceFile(props);
         //TODO: Only call dbModule if there is a property for it.
         try {

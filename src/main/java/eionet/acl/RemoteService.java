@@ -86,7 +86,7 @@ public class RemoteService {
 
 //      System.out.println("======== entries: " + entries.size());
 
-        aclInfo.put("owner", new Boolean(acl.isOwner(_user.getUserName())).toString());
+        aclInfo.put("owner", Boolean.valueOf(acl.isOwner(_user.getUserName())).toString());
 
         return aclInfo;
     }
