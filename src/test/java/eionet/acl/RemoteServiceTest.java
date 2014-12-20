@@ -66,11 +66,36 @@ public class RemoteServiceTest extends ACLDatabaseTestCase {
 
     @Test
     public void testLocalGroups() throws Exception {
-        Hashtable<String, Vector> groups = rs.getLocalGroups();
+        AppUser myUser = new AppUser();
+        myUser.authenticate("ander", "mi6");
 
-        Vector appAdminMembers = groups.get("app_admin");
+        rs = new RemoteService(myUser);
+
+        Hashtable<String, Vector> savedGroups = rs.getLocalGroups();
+
+        Vector appAdminMembers = savedGroups.get("app_admin");
         assertTrue(appAdminMembers.contains("jaanus2"));
         //System.out.println(groups);
+
+        Hashtable<String, Vector> newGroups = new Hashtable<String, Vector>();
+
+        Vector<String> adminMembers = new Vector<String>();
+        adminMembers.add("ander");
+        newGroups.put("app_admin", adminMembers);
+
+        Vector<String> beatlesMembers = new Vector<String>();
+        beatlesMembers.add("john");
+        beatlesMembers.add("paul");
+        beatlesMembers.add("george");
+        beatlesMembers.add("ringo");
+        newGroups.put("beatles", beatlesMembers);
+
+        assertEquals("OK", rs.setLocalGroups(newGroups));
+        Hashtable<String, Vector> expectedGroups = rs.getLocalGroups();
+        assertTrue(expectedGroups.get("beatles").contains("ringo"));
+        assertFalse(expectedGroups.get("beatles").contains("pete"));
+        
+        rs.setLocalGroups(savedGroups);
     }
 
 
