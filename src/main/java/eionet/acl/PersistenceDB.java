@@ -23,6 +23,9 @@
 
 package eionet.acl;
 
+import java.security.Principal;
+import java.security.acl.Group;
+import java.security.acl.Permission;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -363,7 +366,7 @@ public class PersistenceDB implements Persistence {
     }
 
     private String[][] executeStringQuery(String sql) throws SQLException {
-        Vector rvec = new Vector(); // Return value as Vector
+        Vector<String[]> rvec = new Vector<String[]>(); // Return value as Vector
         String[][] rval = {};       // Return value
         Connection con = null;
         Statement stmt = null;
@@ -387,7 +390,7 @@ public class PersistenceDB implements Persistence {
                 for (int i = 0; i < colCnt; ++i) {
                     row[i] = rset.getString(i + 1);
                 }
-                rvec.addElement(row); // Store the row into the vector
+                rvec.addElement(row);
             }
         } catch (SQLException e) {
             e.printStackTrace(System.out);
@@ -553,7 +556,7 @@ public class PersistenceDB implements Persistence {
      * Parse ACL rows originating from Database.
      */
     private void readAclRowsFromDb(String[][] aclRows, AccessControlList acl) throws SignOnException {
-        ArrayList aRows = new ArrayList();
+        ArrayList<String> aRows = new ArrayList<String>();
         //transform the String to an arraylist similar to text files
         for (int i = 0; i < aclRows.length; i++) {
             String type = aclRows[i][0];
@@ -591,7 +594,7 @@ public class PersistenceDB implements Persistence {
     @Override
     public void writeAcl(final String aclName, Map<String, String> aclAttrs, List aclEntries) throws SignOnException {
 
-        ArrayList aclEntriesAsRows = aclEntriesToFileRows(aclEntries);
+        ArrayList<String> aclEntriesAsRows = aclEntriesToFileRows(aclEntries);
         // split parent and acl name
         String parentName = null;
         String leafName = null;
@@ -625,7 +628,7 @@ public class PersistenceDB implements Persistence {
             try {
                 LOGGER.debug("Going to save entries, size " + aclEntriesAsRows.size());
                 for (int i = 0; i < aclEntriesAsRows.size(); i++) {
-                    saveAclEntry(aclId, aclEntriesAsRows.get(i).toString());
+                    saveAclEntry(aclId, aclEntriesAsRows.get(i));
                 }
             } catch (Exception e) {
                 //recover old rows
@@ -653,12 +656,12 @@ public class PersistenceDB implements Persistence {
      * @param aclEntries
      * @return List of rows in the plain text file format.
      */
-    private static ArrayList aclEntriesToFileRows(List aclEntries) {
+    private static ArrayList<String> aclEntriesToFileRows(List aclEntries) {
 
         if (aclEntries == null)
             return null;
 
-        ArrayList l = new ArrayList();
+        ArrayList<String> l = new ArrayList<String>();
         for  (int i = 0; i < aclEntries.size(); i++) {
 
             Hashtable e = (Hashtable) aclEntries.get(i);
@@ -672,7 +675,7 @@ public class PersistenceDB implements Persistence {
             if (aclType != null && !aclType.equals("object"))
                 eRow.append(":").append(aclType);
 
-            l.add(eRow);
+            l.add(eRow.toString());
         }
 
         return l;
@@ -766,12 +769,12 @@ public class PersistenceDB implements Persistence {
     }
 
     @Override
-    public void readGroups(HashMap groups, HashMap users) throws SQLException, SignOnException {
+    public void readGroups(HashMap<String, Group> groups, HashMap<String, Principal> users) throws SQLException, SignOnException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void writeGroups(Hashtable groups) throws SignOnException {
+    public void writeGroups(Hashtable<String, Group> groups) throws SignOnException {
         throw new UnsupportedOperationException();
     }
 

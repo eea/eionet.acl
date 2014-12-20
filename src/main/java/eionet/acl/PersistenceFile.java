@@ -25,6 +25,9 @@ package eionet.acl;
 
 import java.io.IOException;
 import java.io.File;
+import java.security.acl.Group;
+import java.security.acl.Permission;
+import java.security.Principal;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,7 +79,8 @@ public class PersistenceFile implements Persistence {
      * @throws SignOnException if reading fails
      */
     @Override
-    public void readPermissions(HashMap permissions, Hashtable prmDescrs) throws SignOnException {
+    public void readPermissions(HashMap<String, Permission> permissions, Hashtable<String, String> prmDescrs)
+            throws SignOnException {
         try {
             if (XmlFileReaderWriter.isXmlFileWannabe(permissionsFileName))
                 XmlFileReaderWriter.readPermissions(permissionsFileName, permissions, prmDescrs);
@@ -95,7 +99,7 @@ public class PersistenceFile implements Persistence {
      *
      */
     @Override
-    public void readGroups(HashMap groups, HashMap users) throws SQLException, SignOnException {
+    public void readGroups(HashMap<String, Group> groups, HashMap<String, Principal> users) throws SQLException, SignOnException {
         try {
             if (XmlFileReaderWriter.isXmlFileWannabe(localgroupsFileName))
                 XmlFileReaderWriter.readGroups(localgroupsFileName, groups, users);
@@ -113,7 +117,7 @@ public class PersistenceFile implements Persistence {
      * Write local groups to file.
      */
     @Override
-    public void writeGroups(Hashtable groups) throws SignOnException {
+    public void writeGroups(Hashtable<String, Group> groups) throws SignOnException {
         XmlFileReaderWriter.writeGroups(localgroupsFileName, groups);
     }
 
@@ -127,7 +131,7 @@ public class PersistenceFile implements Persistence {
         // read acl files
         File[] aclFiles = fileReader.getAclFiles(aclsFolderName);
         for (int i = 0; i < aclFiles.length; i++) {
-            String name = fileReader.getAclName(aclFiles[i]);
+            String name = getAclName(aclFiles[i]);
             AccessControlListIF acl = readAclFile(aclFiles[i]);
 
             name = name.replace('_', '/');
@@ -201,7 +205,7 @@ public class PersistenceFile implements Persistence {
             if (XmlFileReaderWriter.isXmlFileWannabe(aclFileName))
                 XmlFileReaderWriter.readACL(aclFileName, acl);
             else {
-                ArrayList aRows = fReader.readFileRows(aclFileName);
+                ArrayList<String> aRows = fReader.readFileRows(aclFileName);
                 acl.processAclRows(aRows);
             }
         } catch (IOException e) {

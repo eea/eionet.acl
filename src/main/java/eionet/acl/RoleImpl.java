@@ -40,7 +40,7 @@ import eionet.directory.DirectoryService;
 class RoleImpl implements Group {
 
     private String _name;
-    private Hashtable _members;
+    private Hashtable<String, Principal> _members;
 
 
     public RoleImpl(String roleName) {
@@ -50,7 +50,7 @@ class RoleImpl implements Group {
 
     private void initMembers() {
         if (_members == null)
-          _members = new Hashtable();
+          _members = new Hashtable<String, Principal>();
 
         try {
             Vector occupants = DirectoryService.getOccupants(_name);
@@ -114,7 +114,6 @@ class RoleImpl implements Group {
             return true;
         }
     }
-
 
     @Override
     public Enumeration members() {

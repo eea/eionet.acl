@@ -4,6 +4,16 @@ ACL Module 2.0
 This is a module that implements an Access Control Mechanism based on Distributed Computing Environment.
 
 Version 2.0 has the same public interface as version 1.x except the package name space is changed from com.tee.uit.security to eionet.acl.
+
+Another change, but one that has requires no change in code is that the eionet acl-impl library has been included. This contains the SUN Microsystems implementation of groups, users etc. The only effect is that you _might_ have to remove the following in your pom.xml.
+```xml
+<dependency>
+    <groupId>eionet.acl</groupId>
+    <artifactId>acl-impl</artifactId>
+    <version>1.0</version>
+</dependency>
+```
+
 Installation and usage:
 -----------------------
 This package is built with Maven, and is deployed to the agency repository.
@@ -12,7 +22,7 @@ $ mvn deploy
 ```
 
 Add this to your pom.xml:
-```
+```xml
 <repositories>
     <repository>
         <id>eea</id>
@@ -23,7 +33,14 @@ Add this to your pom.xml:
         </snapshots>
     </repository>
 </repositories>
-
+...
+<dependencies>
+    <dependency>
+        <groupId>eionet.acl</groupId>
+        <artifactId>acl</artifactId>
+        <version>2.0</version>
+    </dependency>
+</dependencies>
 ```
 
 

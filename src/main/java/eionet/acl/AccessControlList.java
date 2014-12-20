@@ -77,7 +77,7 @@ class AccessControlList implements AccessControlListIF {
 
     /** Groups are retrieved from the AccessController. */
     private HashMap groups;
-    private HashMap users;
+    private HashMap<String, Principal> users;
     private HashMap permissions;
 
     private static final Logger LOGGER = Logger.getLogger(AccessControlList.class);
@@ -216,7 +216,7 @@ class AccessControlList implements AccessControlListIF {
      */
     @Override
     public Vector getPermissions(String user) throws SignOnException {
-        Collection prms = new HashSet();
+        Collection<String> prms = new HashSet<String>();
         Principal p;
         Enumeration ePerms;
 
@@ -236,7 +236,7 @@ class AccessControlList implements AccessControlListIF {
 
                 }
                 //return prms;
-                Vector v = new Vector(prms);
+                Vector<String> v = new Vector<String>(prms);
                 return v;
             }
 
@@ -251,7 +251,7 @@ class AccessControlList implements AccessControlListIF {
 
                 }
             }
-            Vector v = new Vector(prms);
+            Vector<String> v = new Vector<String>(prms);
             return v;
             //return prms;
         }
@@ -268,7 +268,7 @@ class AccessControlList implements AccessControlListIF {
             }
         }
 
-        Vector v = new Vector(prms);
+        Vector<String> v = new Vector<String>(prms);
         return v;
 
     }
@@ -313,7 +313,7 @@ class AccessControlList implements AccessControlListIF {
      * @param aRows
      * @throws SignOnException
      */
-    public void processAclRows(ArrayList aRows) throws SignOnException {
+    public void processAclRows(ArrayList<String> aRows) throws SignOnException {
 
         // Process rows twice.
         // First process group rows because we have to know the group membership already when processing users.
@@ -410,7 +410,7 @@ class AccessControlList implements AccessControlListIF {
                 //l("Add AclEntry " + aclGrp.getPrincipal().getName());
                 acl.addEntry(owner, aclGrp);
             } catch (NotOwnerException noe) {
-                throw new SignOnException("Not owner "  + noe.toString());
+                throw new SignOnException("Not owner " + noe.toString());
             }
         }
     }
@@ -615,8 +615,8 @@ class AccessControlList implements AccessControlListIF {
      * Hashmap of groups where the user is member of.
      * @param user User
      */
-    private HashMap isMemberOf(Principal user) {
-        HashMap grpNames = new HashMap();
+    private HashMap<Group, String> isMemberOf(Principal user) {
+        HashMap<Group, String> grpNames = new HashMap<Group, String>();
         for (Iterator i = groups.keySet().iterator(); i.hasNext();) {
             Group g = (Group) groups.get(i.next());
             if (g.isMember(user))
@@ -628,9 +628,9 @@ class AccessControlList implements AccessControlListIF {
     }
 
     //translate AclE to understandable format for DB module: aclE
-    private HashMap aclEntryToHash(AclEntry aclE, String permissionsArray, AclEntryType entryType) {
+    private HashMap<String, String> aclEntryToHash(AclEntry aclE, String permissionsArray, AclEntryType entryType) {
 
-        HashMap h = new HashMap();
+        HashMap<String, String> h = new HashMap<String, String>();
         String eName = aclE.getPrincipal().getName();
         String type = getPrincipalType(aclE.getPrincipal());
 

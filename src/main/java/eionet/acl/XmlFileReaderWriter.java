@@ -10,6 +10,7 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.security.acl.Group;
+import java.security.acl.Permission;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -52,7 +53,8 @@ public class XmlFileReaderWriter {
      *
      * @param fileFullPath
      */
-    public static void readGroups(String fileFullPath, HashMap groups, HashMap users) throws SignOnException {
+    public static void readGroups(String fileFullPath, HashMap<String, Group> groups, HashMap<String, Principal> users)
+            throws SignOnException {
 
         try {
             File file = new File(fileFullPath);
@@ -98,7 +100,7 @@ public class XmlFileReaderWriter {
      * @param groupElm
      * @return Group object or null
      */
-    private static Group readGroup(Element groupElm, HashMap allUsers) {
+    private static Group readGroup(Element groupElm, HashMap<String, Principal> allUsers) {
 
         String groupID = groupElm.getAttribute("id");
         if (groupID == null || groupID.length() == 0)
@@ -126,7 +128,7 @@ public class XmlFileReaderWriter {
      * @param groups
      * @throws SignOnException
      */
-    public static void writeGroups(String fileFullPath, Map groups) throws SignOnException {
+    public static void writeGroups(String fileFullPath, Map<String, Group> groups) throws SignOnException {
 
         TransformerFactory trf = TransformerFactory.newInstance();
 
@@ -236,7 +238,7 @@ public class XmlFileReaderWriter {
      * @param prmDescrs
      * @throws SignOnException
      */
-    public static void readPermissions(String fileFullPath, Map permissions, Map prmDescrs) throws SignOnException {
+    public static void readPermissions(String fileFullPath, Map<String, Permission> permissions, Map<String, String> prmDescrs) throws SignOnException {
 
         try {
             File file = new File(fileFullPath);
@@ -316,7 +318,7 @@ public class XmlFileReaderWriter {
 
             // loop through entries, for each of them construct an acl row in the old format (i.e. user:roug:i,v,u),
             // collect those rows into a list
-            ArrayList rows = new ArrayList();
+            ArrayList<String> rows = new ArrayList<String>();
             for (int i = 0; i < nlEntry.getLength(); i++) {
 
                 // get entry's type

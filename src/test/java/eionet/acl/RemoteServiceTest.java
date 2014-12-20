@@ -15,7 +15,9 @@ import java.util.Vector;
 import java.util.ResourceBundle;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /**
  * Tests various methods of RemoteService.
@@ -24,6 +26,9 @@ import org.junit.Test;
  *
  */
 public class RemoteServiceTest extends ACLDatabaseTestCase {
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     RemoteService rs;
 
@@ -71,13 +76,13 @@ public class RemoteServiceTest extends ACLDatabaseTestCase {
 
         rs = new RemoteService(myUser);
 
-        Hashtable<String, Vector> savedGroups = rs.getLocalGroups();
+        Hashtable<String, Vector<String>> savedGroups = rs.getLocalGroups();
 
         Vector appAdminMembers = savedGroups.get("app_admin");
         assertTrue(appAdminMembers.contains("jaanus2"));
         //System.out.println(groups);
 
-        Hashtable<String, Vector> newGroups = new Hashtable<String, Vector>();
+        Hashtable<String, Vector<String>> newGroups = new Hashtable<String, Vector<String>>();
 
         Vector<String> adminMembers = new Vector<String>();
         adminMembers.add("ander");
@@ -91,7 +96,7 @@ public class RemoteServiceTest extends ACLDatabaseTestCase {
         newGroups.put("beatles", beatlesMembers);
 
         assertEquals("OK", rs.setLocalGroups(newGroups));
-        Hashtable<String, Vector> expectedGroups = rs.getLocalGroups();
+        Hashtable<String, Vector<String>> expectedGroups = rs.getLocalGroups();
         assertTrue(expectedGroups.get("beatles").contains("ringo"));
         assertFalse(expectedGroups.get("beatles").contains("pete"));
         
@@ -102,7 +107,7 @@ public class RemoteServiceTest extends ACLDatabaseTestCase {
     /**
      * Enriko doesn't have 'c' permission.
      */
-    @Test(expected=SignOnException.class)
+    @Test
     public void setAclWithNoControl() throws Exception {
         Hashtable<String, Object> aclInfo = new Hashtable<String, Object>();
 
@@ -114,8 +119,9 @@ public class RemoteServiceTest extends ACLDatabaseTestCase {
         Hashtable<String, String> row1 = constructAclEntry("user", "enriko", "c,v");
         aclEntries.add(row1);
         aclInfo.put("entries", aclEntries);
-        rs.setAclInfo(aclInfo);
 
+        thrown.expect(SignOnException.class);
+        rs.setAclInfo(aclInfo);
     }
 
     /**
@@ -128,7 +134,7 @@ public class RemoteServiceTest extends ACLDatabaseTestCase {
 
         rs = new RemoteService(myUser);
 
-        Hashtable<String, Object> savedAclInfo = new Hashtable<String, Object>();
+        Hashtable<String, Object> savedAclInfo;
         savedAclInfo = rs.getAclInfo("/eeaprojects");
 
         Hashtable<String, Object> aclInfo = new Hashtable<String, Object>();
@@ -160,7 +166,7 @@ public class RemoteServiceTest extends ACLDatabaseTestCase {
      * @param permissions permissions in CSV format
      * @return entry hash
      */
-    private Hashtable constructAclEntry(String principalType, String principalId, String permissions) {
+    private Hashtable<String, String> constructAclEntry(String principalType, String principalId, String permissions) {
 
         Hashtable<String, String> h = new Hashtable<String, String>();
         h.put("acltype", "object"); // hard-coded

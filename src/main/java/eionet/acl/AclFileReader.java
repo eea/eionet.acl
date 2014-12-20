@@ -65,9 +65,9 @@ class AclFileReader {
      * @param users
      * @throws SignOnException
      */
-    void readGroups(String fileName, HashMap groups, HashMap users) throws SignOnException  {
+    void readGroups(String fileName, HashMap<String, Group> groups, HashMap<String, Principal> users) throws SignOnException  {
 
-        ArrayList uRows = readFileRows(fileName);
+        ArrayList<String> uRows = readFileRows(fileName);
 
         //process the file Rows
         for (Iterator i = uRows.iterator(); i.hasNext();) {
@@ -85,9 +85,9 @@ class AclFileReader {
      * @return a list containing the lines of the file.
      * @throws SignOnException
      */
-    ArrayList readFileRows(String fileName) throws SignOnException {
+    ArrayList<String> readFileRows(String fileName) throws SignOnException {
 
-        ArrayList rows = new ArrayList();
+        ArrayList<String> rows = new ArrayList<String>();
         try {
             FileReader fr = new FileReader(fileName);
             BufferedReader  reader  = new BufferedReader(fr);
@@ -113,9 +113,8 @@ class AclFileReader {
      * @param users - hashmaps of users and their memberships.
      * @throws SignOnException
      */
-    private void processLocalGroup(String ugRow, HashMap groups, HashMap users) throws SignOnException {
+    private void processLocalGroup(String ugRow, HashMap<String, Group> groups, HashMap<String, Principal> users) throws SignOnException {
         String grpName = ugRow.substring(0, ugRow.indexOf(":"));
-        //l("group=" + grpName);
         Group grp = new GroupImpl(grpName);
         groups.put(grpName, grp);
 
@@ -130,7 +129,7 @@ class AclFileReader {
      * @param users
      * @throws SignOnException
      */
-    private void processUsers(String usrs, Group grp, HashMap users) throws SignOnException {
+    private void processUsers(String usrs, Group grp, HashMap<String, Principal> users) throws SignOnException {
         StringTokenizer tokenizer = new StringTokenizer(usrs, ",");
 
         while (tokenizer.hasMoreElements()) {
@@ -156,8 +155,8 @@ class AclFileReader {
      * @param prmDescrs
      * @throws SignOnException
      */
-    void readPermissions(String fileFullPath, Map permissions, Map prmDescrs) throws SignOnException {
-        ArrayList pRows = readFileRows(fileFullPath);
+    void readPermissions(String fileFullPath, Map<String, Permission> permissions, Map<String, String> prmDescrs) throws SignOnException {
+        ArrayList<String> pRows = readFileRows(fileFullPath);
         for (Iterator i = pRows.iterator(); i.hasNext();) {
             String pRow = (String) i.next();
             processPermissions(pRow, permissions, prmDescrs);
@@ -172,7 +171,7 @@ class AclFileReader {
      * @param prmDescrs
      * @throws SignOnException
      */
-    private void processPermissions(String pRow, Map permissions, Map prmDescrs) throws SignOnException {
+    private void processPermissions(String pRow, Map<String, Permission> permissions, Map<String, String> prmDescrs) throws SignOnException {
         //StringTokenizer t = new     StringTokenizer(pRow, ":");
         //permissions = new HashMap();
         //char permission = pRow.charAt(0);
@@ -233,7 +232,7 @@ class AclFileReader {
         return fileName.substring(0, pos);
     }
 
-    public void writeAcl(String fileFullPath, Map aclAttrs, List aclEntries) throws SignOnException {
+    public void writeAcl(String fileFullPath, Map aclAttrs, List<Map> aclEntries) throws SignOnException {
         ArrayList l = setAclEntries(aclEntries);
         writeFileRows(fileFullPath, l);
     }

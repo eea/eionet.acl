@@ -59,7 +59,7 @@ public class RemoteService {
      * user:john:s,y0,c
      * </pre>
      */
-    public Hashtable getAclInfo(String aclName) throws SignOnException  {
+    public Hashtable<String, Object> getAclInfo(String aclName) throws SignOnException  {
 
         if (_user == null)
             throw new SignOnException("Not authenticated");
@@ -69,7 +69,7 @@ public class RemoteService {
          if (!acl.isOwner(_user.getUserName()))
          throw new SignOnException("Not owner");
          */
-        Hashtable aclInfo = new Hashtable();
+        Hashtable<String, Object> aclInfo = new Hashtable<String, Object>();
         String descr = acl.getDescription();
 
         aclInfo.put("name", aclName);
@@ -83,8 +83,6 @@ public class RemoteService {
 
         Vector entries = acl.getEntryRows();
         aclInfo.put("entries", entries);
-
-//      System.out.println("======== entries: " + entries.size());
 
         aclInfo.put("owner", Boolean.valueOf(acl.isOwner(_user.getUserName())).toString());
 
@@ -105,7 +103,7 @@ public class RemoteService {
         // We cannot authorise here with c-permission because the user who is not admin of
         // the parent ACL may be the admin of the child ACL
 
-        Vector v = new Vector();
+        Vector<String> v = new Vector<String>();
         HashMap acls = AccessController.getAcls();
         for (Iterator i = acls.keySet().iterator(); i.hasNext();) {
             String aclName = (String) i.next();
@@ -123,7 +121,7 @@ public class RemoteService {
 
         //sort alphabetically
         Collator collator = Collator.getInstance();
-        Collections.sort(v,collator);
+        Collections.sort(v, collator);
 
         return v;
     }
@@ -138,7 +136,7 @@ public class RemoteService {
         if (_user == null)
             throw new SignOnException("Not authenticated");
 
-        Vector v = new Vector();
+        Vector<Object> v = new Vector<Object>();
         HashMap acls = AccessController.getAcls();
         for (Iterator i = acls.keySet().iterator(); i != null && i.hasNext();)
             v.add(i.next());
@@ -164,8 +162,8 @@ public class RemoteService {
         if (_user == null)
             throw new SignOnException("Not authenticated");
 
-        Hashtable result = new Hashtable();
-        HashMap acls = AccessController.getAcls();
+        Hashtable<String, Hashtable> result = new Hashtable<String, Hashtable>();
+        HashMap<String, AccessControlListIF> acls = AccessController.getAcls();
         for (Iterator i = acls.keySet().iterator(); i != null && i.hasNext();) {
             String aclName = (String) i.next();
             Hashtable aclInfo = getAclInfo(aclName);
@@ -184,17 +182,17 @@ public class RemoteService {
         if (_user == null)
             throw new SignOnException("Not authenticated");
 
-        Hashtable h = new Hashtable();
+        Hashtable<String, Object> h = new Hashtable<String, Object>();
         h.put("minor_ver", "1.0");
         h.put("major_ver", "4.0");
 
-        Hashtable flags = new Hashtable();
+        Hashtable<String, Hashtable> flags = new Hashtable<String, Hashtable>();
 
         //name hard-coded !!!
         flags.put("tableperms", AccessController.prmDescrs);
 
         //localgroup permissions hard-coded now:
-        Hashtable gPerms = new Hashtable();
+        Hashtable<String, String> gPerms = new Hashtable<String, String>();
         gPerms.put("v", "View");
         gPerms.put("u", "Update");
         gPerms.put("c", "Control");
@@ -203,21 +201,21 @@ public class RemoteService {
 
         h.put("flags", flags);
 
-        Vector eTypes = new Vector();
-        Hashtable eType = new Hashtable();
+        Vector<Object> eTypes = new Vector<Object>();
+        Hashtable<String, String> eType = new Hashtable<String, String>();
 
         eType.put("type", "user");
         eType.put("arg", "y");
 
         eTypes.add(eType);
 
-        eType = new Hashtable();
+        eType = new Hashtable<String, String>();
         eType.put("type", "circarole");
         eType.put("arg", "y");
 
         eTypes.add(eType);
 
-        eType = new Hashtable();
+        eType = new Hashtable<String, String>();
         eType.put("type", "localgroup");
         eType.put("arg", "y");
 
@@ -235,7 +233,7 @@ public class RemoteService {
      * RPC method, return localgroups
      * Struct: key: group name, value: Array of Strings[user names]
      */
-    public Hashtable getLocalGroups() throws SignOnException {
+    public Hashtable<String, Vector<String>> getLocalGroups() throws SignOnException {
         if (_user == null)
             throw new SignOnException("Not authenticated");
 
@@ -256,7 +254,7 @@ public class RemoteService {
 
         boolean isAllowed = grpAcl.checkPermission(_user.getUserName(), permFlag);
         if (!isAllowed)
-            return new Hashtable();
+            return new Hashtable<String, Vector<String>>();
         else
             return AccessController.getGroups();
 

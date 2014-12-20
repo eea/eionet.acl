@@ -11,7 +11,9 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /**
  *
@@ -20,6 +22,8 @@ import org.junit.Test;
  */
 public class AccessControlListTest extends ACLDatabaseTestCase {
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     /**
      * Tests various methods of AccessControlListIF, but also makes sure the code is still able to handle ACL files that are not in
@@ -105,7 +109,7 @@ public class AccessControlListTest extends ACLDatabaseTestCase {
 
             // create some new entries in the freshly created ACL and then reset (and read the ACL again),
             // because ACLs are not refresh automatically in the memeory
-            Vector entries = new Vector();
+            Vector<Hashtable<String, String>> entries = new Vector<Hashtable<String, String>>();
             entries.add(constructAclEntry("user", "jensen", "v,i"));
             entries.add(constructAclEntry("localgroup", "app_user", "x"));
             acl.setAclEntries(entries);
@@ -132,9 +136,9 @@ public class AccessControlListTest extends ACLDatabaseTestCase {
      * @param permissions permissions in CSV format
      * @return entry hash
      */
-    private Hashtable constructAclEntry(String principalType, String principalId, String permissions) {
+    private Hashtable<String, String> constructAclEntry(String principalType, String principalId, String permissions) {
 
-        Hashtable h = new Hashtable();
+        Hashtable<String, String> h = new Hashtable<String, String>();
         h.put("acltype", "object"); // hard-coded
         h.put("type", principalType);
         h.put("id", principalId);
@@ -370,4 +374,43 @@ public class AccessControlListTest extends ACLDatabaseTestCase {
         assertFalse(AccessController.aclExists(folder));
     }
 
+    @Test
+    public void renameTestHappyPath() throws Exception {
+        String object1 = "/whatever/object1";
+        String newObject = "/whatever/newname";
+
+        AccessController.addAcl(object1, "enriko", "Description of my object");
+        assertTrue(AccessController.aclExists(object1));
+        assertFalse(AccessController.aclExists(newObject));
+
+        AccessController.renameAcl(object1, newObject);
+        assertFalse(AccessController.aclExists(object1));
+        assertTrue(AccessController.aclExists(newObject));
+        
+        // Clean up
+        AccessController.removeAcl(newObject);
+        assertFalse(AccessController.aclExists(newObject));
+    }
+
+    @Test
+    public void renameTestMustFail() throws Exception {
+        String object1 = "/whatever/object1";
+        String newObject = "/somethingelse/newname";
+
+        AccessController.addAcl(object1, "enriko", "Description of my object");
+        assertTrue(AccessController.aclExists(object1));
+        assertFalse(AccessController.aclExists(newObject));
+
+        thrown.expect(SignOnException.class);
+        try {
+            AccessController.renameAcl(object1, newObject);
+        } finally {
+            assertTrue(AccessController.aclExists(object1));
+            assertFalse(AccessController.aclExists(newObject));
+            
+            // Clean up
+            AccessController.removeAcl(object1);
+            assertFalse(AccessController.aclExists(object1));
+        }
+    }
 }

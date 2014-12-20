@@ -23,6 +23,9 @@
 package eionet.acl;
 
 import java.sql.SQLException;
+import java.security.Principal;
+import java.security.acl.Group;
+import java.security.acl.Permission;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -40,7 +43,7 @@ public interface Persistence {
      *
      * @throws SignOnException if reading fails
      */
-    void readPermissions(HashMap permissions, Hashtable prmDescrs) throws SignOnException;
+    void readPermissions(HashMap<String, Permission> permissions, Hashtable<String, String> prmDescrs) throws SignOnException;
 
     /**
      * Adds new ACL to the database.
@@ -107,12 +110,12 @@ public interface Persistence {
      * @throws SQLException if error in reading from database
      * @throws SignOnException if reading fails
      */
-    void readGroups(HashMap groups, HashMap users) throws SQLException, SignOnException;
+    void readGroups(HashMap<String, Group> groups, HashMap<String, Principal> users) throws SQLException, SignOnException;
 
     /**
      * Write local groups to file.
      *
      * @throws SignOnException if writing fails
      */
-    void writeGroups(Hashtable groups) throws SignOnException;
+    void writeGroups(Hashtable<String, Group> groups) throws SignOnException;
 }

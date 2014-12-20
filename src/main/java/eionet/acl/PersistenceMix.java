@@ -23,6 +23,9 @@
 
 package eionet.acl;
 
+import java.security.Principal;
+import java.security.acl.Group;
+import java.security.acl.Permission;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -62,7 +65,7 @@ class PersistenceMix implements Persistence {
      * @throws SignOnException if reading fails
      */
     @Override
-    public void readPermissions(HashMap permissions, Hashtable prmDescrs) throws SignOnException {
+    public void readPermissions(HashMap<String, Permission> permissions, Hashtable<String, String> prmDescrs) throws SignOnException {
         fileModule.readPermissions(permissions, prmDescrs);
     }
 
@@ -72,7 +75,7 @@ class PersistenceMix implements Persistence {
      * @throws SignOnException if reading fails
      */
     @Override
-    public void readGroups(HashMap groups, HashMap users) throws SQLException, SignOnException {
+    public void readGroups(HashMap<String, Group> groups, HashMap<String, Principal> users) throws SQLException, SignOnException {
         fileModule.readGroups(groups, users);
     }
 
@@ -80,7 +83,7 @@ class PersistenceMix implements Persistence {
      * Write local groups to file.
      */
     @Override
-    public void writeGroups(Hashtable groups) throws SignOnException {
+    public void writeGroups(Hashtable<String, Group> groups) throws SignOnException {
         fileModule.writeGroups(groups);
     }
 

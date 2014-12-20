@@ -23,6 +23,7 @@
 
 package eionet.acl;
 
+import java.security.acl.Permission;
 import java.security.Principal;
 import java.security.acl.Group;
 import java.util.Enumeration;
@@ -42,7 +43,7 @@ import eionet.acl.impl.PermissionImpl;
 public final class AccessController {
 
     /** ACLs. */
-    private static HashMap acls;
+    private static HashMap<String, AccessControlListIF> acls;
 
     /** System properties. */
     private static ResourceBundle props;
@@ -61,11 +62,11 @@ public final class AccessController {
     static String authEntry = "";
 
     /** HashMap for groups. */
-    static HashMap groups;
+    static HashMap<String, Group> groups;
     /** HashMap for user entries. */
-    static HashMap users;
+    static HashMap<String, Principal> users;
     /** HashMap for permissions. */
-    static HashMap permissions;
+    static HashMap<String, Permission> permissions;
     /** HashMap for permission descriptions. */
     static Hashtable prmDescrs;
 
@@ -91,7 +92,7 @@ public final class AccessController {
      * @return HashMap of ACLs
      * @throws SignOnException if reading fails
      */
-    public static HashMap getAcls() throws SignOnException {
+    public static HashMap<String, AccessControlListIF> getAcls() throws SignOnException {
 
         //if DB is in error mode let's try to read ACLs each time until it succeeds
         if (dbInError) {
@@ -117,7 +118,7 @@ public final class AccessController {
         }
 
         if (acls.containsKey(name)) {
-            return (AccessControlListIF) acls.get(name);
+            return acls.get(name);
         } else {
             throw new AclNotFoundException("Could not find ACL by the name of " + name);
         }
@@ -134,11 +135,11 @@ public final class AccessController {
         try {
             readProperties();
 
-            users = new HashMap();
-            groups = new HashMap();
-            permissions = new HashMap();
-            prmDescrs = new Hashtable();
-            acls = new HashMap();
+            users = new HashMap<String, Principal>();
+            groups = new HashMap<String, Group>();
+            permissions = new HashMap<String, Permission>();
+            prmDescrs = new Hashtable<String, String>();
+            acls = new HashMap<String, AccessControlListIF>();
 
             getPersistence();
             fileStorage.readGroups(groups, users);
@@ -219,12 +220,12 @@ public final class AccessController {
      * @return hash with groups
      * @throws SignOnException if reading fails
      */
-    static Hashtable getGroups() throws SignOnException {
+    static Hashtable<String, Vector<String>> getGroups() throws SignOnException {
 
-        Hashtable h = new Hashtable();
+        Hashtable<String, Vector<String>> h = new Hashtable<String, Vector<String>>();
         for (Iterator i = groups.keySet().iterator(); i.hasNext();) {
             Group group = (Group) groups.get(i.next());
-            Vector members = getGroupMembers(group);
+            Vector<String> members = getGroupMembers(group);
 
             h.put(group.getName(), members);
         }
@@ -238,11 +239,11 @@ public final class AccessController {
      * @param g local group
      * @return Array of members
      */
-    private static Vector getGroupMembers(Group g) {
+    private static Vector<String> getGroupMembers(Group g) {
         Enumeration members = g.members();
-        Vector m = new Vector();
+        Vector<String> m = new Vector<String>();
         while (members.hasMoreElements()) {
-            m.add(((Principal) members.nextElement()).getName());
+            m.add(((Principal)members.nextElement()).getName());
         }
         return m;
     }
@@ -298,10 +299,9 @@ public final class AccessController {
         }
 
         StringBuffer s = new StringBuffer();
-
         for (Iterator i = acls.keySet().iterator(); i.hasNext();) {
             String aclName = (String) i.next();
-            Vector ePerms = ((AccessControlListIF) acls.get(aclName)).getPermissions(user);
+            Vector ePerms = acls.get(aclName).getPermissions(user);
             s.append(parsePerms(aclName, ePerms));
         }
 
@@ -344,7 +344,7 @@ public final class AccessController {
      * @return permissions in a hash in required format
      */
     static HashMap groupPermissions() {
-        HashMap gPerms = new HashMap();
+        HashMap<String, Permission> gPerms = new HashMap<String, Permission>();
         gPerms.put("v", new PermissionImpl("v"));
         gPerms.put("c", new PermissionImpl("c"));
         gPerms.put("u", new PermissionImpl("u"));
