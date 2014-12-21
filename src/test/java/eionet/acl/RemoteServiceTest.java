@@ -35,7 +35,7 @@ public class RemoteServiceTest extends ACLDatabaseTestCase {
     @Before
     public void logIn() throws Exception {
         AppUser myUser = new AppUser();
-        myUser.authenticate("enriko", "mi6");
+        myUser.authenticateForTest("enriko");
 
         rs = new RemoteService(myUser);
     }
@@ -72,7 +72,7 @@ public class RemoteServiceTest extends ACLDatabaseTestCase {
     @Test
     public void testLocalGroups() throws Exception {
         AppUser myUser = new AppUser();
-        myUser.authenticate("ander", "mi6");
+        myUser.authenticateForTest("ander");
 
         rs = new RemoteService(myUser);
 
@@ -130,7 +130,7 @@ public class RemoteServiceTest extends ACLDatabaseTestCase {
     @Test
     public void setAclWithJaanus() throws Exception {
         AppUser myUser = new AppUser();
-        myUser.authenticate("heinlaid", "mi6");
+        myUser.authenticateForTest("heinlaid");
 
         rs = new RemoteService(myUser);
 

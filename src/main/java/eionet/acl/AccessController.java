@@ -373,11 +373,11 @@ public final class AccessController {
     }
 
     /**
-     * Adds a new ACL under the specified parent ACL.
+     * Adds a new ACL for a non-folder object under the specified parent ACL.
      *
      * @param aclPath full acl Path - "/datasets/1234"
-     * @param owner - the owner of the ACL - "jaanus"
-     * @param description Descritpion of the ACL object - "Lakes"
+     * @param owner - the owner of the object - "jaanus"
+     * @param description Description of the ACL object - "Lakes"
      * @throws SignOnException if ACL exists or DB operation fails
      */
     public static void addAcl(String aclPath, String owner, String description) throws SignOnException {

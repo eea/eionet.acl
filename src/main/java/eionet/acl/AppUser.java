@@ -15,7 +15,7 @@
  * The Original Code code was developed for the European
  * Environment Agency (EEA) under the IDA/EINRC framework contract.
  *
- * Copyright (C) 2000-2002 by European Environment Agency.  All
+ * Copyright (C) 2000-2014 by European Environment Agency.  All
  * Rights Reserved.
  *
  * Original Code: Kaido Laine (TietoEnator)
@@ -30,9 +30,6 @@ package eionet.acl;
  *
  */
 public class AppUser {
-
-    /** */
-    private static final String PASSWORD_FOR_DEBUGGING = "mi6";
 
     /** */
     private String _userName = null;
@@ -58,22 +55,22 @@ public class AppUser {
      */
     public void authenticate(String user, String pwd) throws SignOnException {
         try {
-
-            if (pwd != null && pwd.equals(PASSWORD_FOR_DEBUGGING)) {
-                if (user == null)
-                    throw new SignOnException("Username not given for debugging password");
-                else {
-                    _userName = user;
-                    return;
-                }
-            }
-
             AuthMechanism.sessionLogin(user, pwd);
             _userName = user;
         } catch (SignOnException de) {
             _userName = null;
             throw new SignOnException("Not authenticated");
         }
+    }
+   
+    /**
+     * Authenticate user for automated testing. This method must never be
+     * called from production code.
+     *
+     * @param user - the account you want to be.
+     */
+    void authenticateForTest(String user) {
+        _userName = user;
     }
 
 }
