@@ -43,8 +43,73 @@ import eionet.acl.impl.PrincipalImpl;
 
 
 /**
- * Read and write XML-based ACL files.
- * @author heinljab
+Read and write XML-based ACL files.
+@author Jaanus Heinlaid
+
+Reportnet uses an XML-formatted configuration file to describe ACLs. The ACL is derived from principles 
+in the Distributed Computing Environment.
+
+Example of an ACL:
+<pre>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;acl description="Local_groups"&gt;
+  &lt;entries&gt;
+    &lt;entry type="object"&gt;
+      &lt;principal id="roug" type="user"/&gt;
+      &lt;permissions&gt;
+        &lt;permission id="v"/&gt;
+        &lt;permission id="u"/&gt;
+      &lt;/permissions&gt;
+    &lt;/entry&gt;
+    &lt;entry type="object"&gt;
+      &lt;principal id="authenticated" type="user"/&gt;
+      &lt;permissions&gt;
+        &lt;permission id="v"/&gt;
+      &lt;/permissions&gt;
+    &lt;/entry&gt;
+    &lt;entry type="object"&gt;
+      &lt;principal id="anonymous" type="user"/&gt;
+      &lt;permissions&gt;
+        &lt;permission id="v"/&gt;
+      &lt;/permissions&gt;
+    &lt;/entry&gt;
+    &lt;entry type="object"&gt;
+      &lt;principal id="cr_admin" type="localgroup"/&gt;
+      &lt;permissions&gt;
+        &lt;permission id="v"/&gt;
+        &lt;permission id="u"/&gt;
+        &lt;permission id="c"/&gt;
+      &lt;/permissions&gt;
+    &lt;/entry&gt;
+  &lt;/entries&gt;
+&lt;/acl&gt;
+</pre>
+
+Example of a file that defines user groups.
+<pre>
+&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+&lt;localgroups&gt;
+&lt;group id="rod_admin" description="ROD administrators"&gt;
+  &lt;member userid="roug" /&gt;
+  &lt;member userid="kasperen" /&gt;
+  &lt;member userid="heinlja" /&gt;
+&lt;/group&gt;
+&lt;/localgroups&gt;
+</pre>
+
+Example of a file that defines permissions.
+<pre>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;permissions&gt;
+        &lt;permission id="v" description="View"/&gt;
+        &lt;permission id="a" description="Access"/&gt;
+        &lt;permission id="x" description="Execute"/&gt;
+        &lt;permission id="u" description="Update"/&gt;
+        &lt;permission id="d" description="Delete"/&gt;
+        &lt;permission id="c" description="Control ACL"/&gt;
+&lt;/permissions&gt;
+</pre>
+
  */
 public class XmlFileReaderWriter {
 

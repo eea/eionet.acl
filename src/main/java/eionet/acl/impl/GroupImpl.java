@@ -68,7 +68,7 @@ public class GroupImpl implements Group {
     /**
      * removes the specified member from the group.
      * @param user The principal to remove from the group.
-     * @param true if the principal was removed false if
+     * @return true if the principal was removed false if
      * the principal was not a member
      */
     @Override
@@ -87,7 +87,7 @@ public class GroupImpl implements Group {
     /**
      * This function returns true if the group passed matches
      * the group represented in this interface.
-     * @param another The group to compare this group to.
+     * @param obj The group to compare this group to.
      */
     @Override
     public boolean equals(Object obj) {
@@ -101,6 +101,11 @@ public class GroupImpl implements Group {
         return group.equals(another.toString());
     }
 
+    /**
+     * This function returns true if the group passed matches
+     * the group represented in this interface.
+     * @param another The group to compare this group to.
+     */
     // equals(Group) for compatibility
     public boolean equals(Group another) {
         return equals((Object)another);

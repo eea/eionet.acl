@@ -19,6 +19,7 @@
  * Rights Reserved.
  *
  * Original Code: Kaido Laine (TietoEnator)
+ * Contributor: Søren Roug
  */
 
 package eionet.acl;
@@ -51,7 +52,7 @@ public final class AccessController {
     private static String persistenceDriver;
 
     /** File operations. */
-    private static Persistence fileStorage;
+    private static Persistence permStorage;
 
     /** Permission to indicate ownership for the ACL. */
     static String ownerPrm = "";
@@ -68,14 +69,14 @@ public final class AccessController {
     /** HashMap for permissions. */
     static HashMap<String, Permission> permissions;
     /** HashMap for permission descriptions. */
-    static Hashtable prmDescrs;
+    static Hashtable<String, String> prmDescrs;
 
     /** Default permissions for ACLs when no DOC and DCC defined. */
     static String defaultDocAndDccPermissions = "v,i,u,d,c";
 
     /**
      * Indicates if database connection has been lost.
-     * if it is in error ACLs are re-ninitialized
+     * if it is in error ACLs are re-initialized
      */
     static boolean dbInError = false;
 
@@ -142,9 +143,9 @@ public final class AccessController {
             acls = new HashMap<String, AccessControlListIF>();
 
             getPersistence();
-            fileStorage.readGroups(groups, users);
-            fileStorage.readPermissions(permissions, prmDescrs);
-            fileStorage.initAcls(acls);
+            permStorage.readGroups(groups, users);
+            permStorage.readPermissions(permissions, prmDescrs);
+            permStorage.initAcls(acls);
         } catch (Exception e) {
             reset(); // otherwise some acls might remain successfylly in session, others not, causing confusion in user
             e.printStackTrace(System.out);
@@ -165,7 +166,6 @@ public final class AccessController {
      * @return REsourceBundle of the properties
      * @throws SignOnException if no file found.
      */
-
     static ResourceBundle getProperties() throws SignOnException {
         if (props == null)
             try {
@@ -240,7 +240,7 @@ public final class AccessController {
      * @return Array of members
      */
     private static Vector<String> getGroupMembers(Group g) {
-        Enumeration members = g.members();
+        Enumeration<? extends Principal> members = g.members();
         Vector<String> m = new Vector<String>();
         while (members.hasMoreElements()) {
             m.add(((Principal)members.nextElement()).getName());
@@ -334,7 +334,7 @@ public final class AccessController {
      * @throws SignOnException if file writing fails
      */
     static void setGroups(Hashtable groups) throws SignOnException {
-        fileStorage.writeGroups(groups);
+        permStorage.writeGroups(groups);
     }
 
 
@@ -359,17 +359,17 @@ public final class AccessController {
      * @return file module
      */
     static Persistence getPersistence() {
-        if (fileStorage == null) {
+        if (permStorage == null) {
             try {
             Class fsClass = Class.forName(persistenceDriver);
             Constructor constructor = fsClass.getConstructor(ResourceBundle.class);
-            fileStorage = (Persistence) constructor.newInstance(props);
+            permStorage = (Persistence) constructor.newInstance(props);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            //fileStorage = new PersistenceMix(props);
+            //permStorage = new PersistenceMix(props);
         }
-        return fileStorage;
+        return permStorage;
     }
 
     /**

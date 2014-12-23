@@ -14,8 +14,8 @@ Another change, but one that has requires no change in code is that the eionet a
 </dependency>
 ```
 
-Installation and usage:
------------------------
+Installation
+------------
 This package is built with Maven, and is deployed to the agency repository.
 ```
 $ mvn deploy
@@ -44,8 +44,8 @@ Add this to your pom.xml:
 ```
 
 
-Configuration:
---------------
+Configuration
+-------------
 - Create the ACL database tables - edit your project's Liquibase change log file and add the change sets from the dbChangeLog.xml.
 
 - Copy `*.acl, acl.group, acl.prms` and `users.xml` from `src/test/resources` to external folder and make the necessary editing.
@@ -54,10 +54,23 @@ Configuration:
   Note that the file and folder paths in the `uit.properties` are relative because of unit tests. For other usage, absolute paths should be used.
 
 
-Unit tests:
------------
+Unit tests
+----------
 All the sources for unit tests are in src/test/java and src/test/resources.
 
 As configured in AccessControlListTest.java and uit.properties, the database tests are run on H2 in-memory database. The database structure
 is located in dbChangeLog.xml which is the change log file for Liquibase. Because MySql and H2 databases differ a little, there are modifications
 to SQL so it would work on both of the databases.
+
+How to use it
+-------------
+
+The main interface to the ACL library is to check whether a user has a type of access to an object. These objects are arranged in a tree-like structure like the local part of a URL.
+
+```java
+boolean access = AccessController.hasPermission("kaido", "/contracts/sa55727" , "r");
+```
+
+TODO
+----
+The concept of ownership is broken. The file-based ACLs don't support it at all, and the database ACLs don't support change of ownership. Additionally, the ownership is for the protected object _and_ the ACL. In some cases, the ownership is stored in the protected object, and there should be an API the application can use to declare that the user checking permission 'x' is also the owner of the object.
