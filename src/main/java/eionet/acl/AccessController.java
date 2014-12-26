@@ -333,7 +333,7 @@ public final class AccessController {
      * @param groups hash of the groups
      * @throws SignOnException if file writing fails
      */
-    static void setGroups(Hashtable groups) throws SignOnException {
+    static void setGroups(Hashtable<String, Group> groups) throws SignOnException {
         permStorage.writeGroups(groups);
     }
 

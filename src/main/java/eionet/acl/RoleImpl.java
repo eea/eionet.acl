@@ -116,7 +116,7 @@ class RoleImpl implements Group {
     }
 
     @Override
-    public Enumeration members() {
+    public Enumeration<? extends Principal> members() {
         //_members.entrySet().iterator().
         return _members.elements();
     }

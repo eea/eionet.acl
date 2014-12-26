@@ -237,8 +237,8 @@ class AclFileReader {
         writeFileRows(fileFullPath, l);
     }
 
-    public ArrayList setAclEntries(List<Map> aclEntries) throws SignOnException {
-        ArrayList l = new ArrayList();
+    public ArrayList<String> setAclEntries(List<Map> aclEntries) throws SignOnException {
+        ArrayList<String> l = new ArrayList<String>();
 
         for (Map e : aclEntries) {
             String eType = (String) e.get("type");
