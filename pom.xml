@@ -2,7 +2,7 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>eionet.acl</groupId>
+    <groupId>eionet</groupId>
     <artifactId>acl</artifactId>
     <packaging>jar</packaging>
 
@@ -14,7 +14,7 @@
     </properties>
 
     <version>2.0</version>
-    <name>ACL</name>
+    <name>ACL 2</name>
     <url>https://github.com/eea</url>
 
     <!-- configuration of Maven repositories to be used -->
