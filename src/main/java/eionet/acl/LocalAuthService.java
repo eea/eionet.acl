@@ -63,7 +63,7 @@ public class LocalAuthService {
 
         String fileFullPath = null;
         try {
-            fileFullPath = AccessController.getProperties().getString("acl.localusers.xml");
+            fileFullPath = (String) AccessController.getProperties().get("acl.localusers.xml");
         } catch (Exception mre) {
             supported = false;
             return;

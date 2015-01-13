@@ -37,7 +37,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import eionet.acl.impl.AclImpl;
@@ -57,18 +56,18 @@ public class PersistenceDB implements Persistence {
     private static final Logger LOGGER = Logger.getLogger(PersistenceDB.class);
 
     DatabaseConnection dbConnection = null;
-    ResourceBundle props = null;
+    Hashtable props = null;
     String dbUrl, dbDriver, dbUser, dbPwd;
 
-    PersistenceDB(ResourceBundle props) throws DbNotSupportedException {
+    PersistenceDB(Hashtable props) throws DbNotSupportedException {
 
         this.props = props;
         try {
             if (props != null) {
-                dbUrl = props.getString("db.url");
-                dbDriver = props.getString("db.driver");
-                dbUser = props.getString("db.user");
-                dbPwd = props.getString("db.pwd");
+                dbUrl = (String) props.get("db.url");
+                dbDriver = (String) props.get("db.driver");
+                dbUser = (String) props.get("db.user");
+                dbPwd = (String) props.get("db.pwd");
                 dbConnection = new DatabaseConnection(dbUrl, dbDriver);
             }
 

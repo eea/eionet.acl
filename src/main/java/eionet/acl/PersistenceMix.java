@@ -31,7 +31,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
 
@@ -49,7 +48,7 @@ class PersistenceMix implements Persistence {
     private PersistenceDB dbModule;
 
 
-    public PersistenceMix(ResourceBundle props) {
+    public PersistenceMix(Hashtable props) {
         fileModule = new PersistenceFile(props);
         //TODO: Only call dbModule if there is a property for it.
         try {

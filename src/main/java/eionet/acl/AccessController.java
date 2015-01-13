@@ -24,6 +24,8 @@
 
 package eionet.acl;
 
+import java.io.InputStream;
+import java.io.IOException;
 import java.security.acl.Permission;
 import java.security.Principal;
 import java.security.acl.Group;
@@ -33,8 +35,14 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.Properties;
 import java.util.Vector;
 import java.lang.reflect.Constructor;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.Binding;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 import eionet.acl.impl.PermissionImpl;
 
@@ -47,7 +55,7 @@ public final class AccessController {
     private static HashMap<String, AccessControlListIF> acls;
 
     /** System properties. */
-    private static ResourceBundle props;
+    private static Hashtable props;
 
     private static String persistenceDriver;
 
@@ -161,18 +169,44 @@ public final class AccessController {
     }
 
     /**
-     * Instance of uit.properties file.
+     * Load properties from JNDI context or properties file as fall-back.
      *
-     * @return REsourceBundle of the properties
+     * @return Hashtable of the properties
      * @throws SignOnException if no file found.
      */
-    static ResourceBundle getProperties() throws SignOnException {
-        if (props == null)
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    static Hashtable getProperties() throws SignOnException {
+
+        if (props == null) {
+            props = new Hashtable<Object,Object>();
+
             try {
-                props = ResourceBundle.getBundle("uit");
-            } catch (MissingResourceException mre) {
-                throw new SignOnException("Properties file uit.properties is not existing in the classpath");
+                Context initContext = new InitialContext();
+                if (initContext != null) {
+                    // Load from JNDI. Tomcat puts its stuff under java:comp/env:
+                    for (Enumeration<Binding> e = initContext.listBindings("java:/comp/env/acl"); e.hasMoreElements();) {
+                        Binding binding = e.nextElement();
+                        props.put(binding.getName(), binding.getObject());
+                    }
+                }
+            } catch (NamingException mre) {
+                throw new SignOnException("JNDI not configured properly");
             }
+
+            // Load from uit.properties.
+            if (props.size() == 0) {
+                try {
+                    Properties fileProps = new Properties();
+                    //this.getClass().getClassLoader()
+                    InputStream inStream = AccessController.class.getResourceAsStream("/uit.properties");
+                    fileProps.load(inStream);
+                    inStream.close();
+                    props.putAll(fileProps);
+                } catch (IOException mre) {
+                    throw new SignOnException("Properties file uit.properties is not found in the classpath");
+                }
+            }
+        }
         return props;
     }
 
@@ -188,19 +222,19 @@ public final class AccessController {
         // read mandatory properties
         try {
 
-            ownerPrm = props.getString("acl.owner.permission");
+            ownerPrm = (String) props.get("acl.owner.permission");
             // pre-defined entry name for anonymous access
-            anonymousEntry = props.getString("acl.anonymous.access");
+            anonymousEntry = (String) props.get("acl.anonymous.access");
 
             // pre-defined entry name for authenticated access
-            authEntry = props.getString("acl.authenticated.access");
+            authEntry = (String) props.get("acl.authenticated.access");
 
             if (props.containsKey("acl.defaultdoc.permissions")) {
-                defaultDocAndDccPermissions = props.getString("acl.defaultdoc.permissions");
+                defaultDocAndDccPermissions = (String) props.get("acl.defaultdoc.permissions");
             }
 
             if (props.containsKey("acl.persistence.provider")) {
-                persistenceDriver = props.getString("acl.persistence.provider");
+                persistenceDriver = (String) props.get("acl.persistence.provider");
             } else {
                 persistenceDriver = "eionet.acl.PersistenceMix";
             }
@@ -362,7 +396,7 @@ public final class AccessController {
         if (permStorage == null) {
             try {
             Class fsClass = Class.forName(persistenceDriver);
-            Constructor constructor = fsClass.getConstructor(ResourceBundle.class);
+            Constructor constructor = fsClass.getConstructor(Hashtable.class);
             permStorage = (Persistence) constructor.newInstance(props);
             } catch (Exception e) {
                 e.printStackTrace();
