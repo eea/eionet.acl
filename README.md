@@ -36,7 +36,7 @@ Add this to your pom.xml:
 ...
 <dependencies>
     <dependency>
-        <groupId>eionet.acl</groupId>
+        <groupId>eionet</groupId>
         <artifactId>acl</artifactId>
         <version>2.0</version>
     </dependency>
