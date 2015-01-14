@@ -23,10 +23,13 @@
 
 package eionet.acl;
 
-import java.security.Principal;
+import eionet.acl.impl.AclImpl;
+import eionet.acl.impl.PrincipalImpl;
 import java.security.acl.Group;
 import java.security.acl.Permission;
+import java.security.Principal;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -39,8 +42,7 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import eionet.acl.impl.AclImpl;
-import eionet.acl.impl.PrincipalImpl;
+import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -55,7 +57,7 @@ public class PersistenceDB implements Persistence {
     /** logger instance. */
     private static final Logger LOGGER = Logger.getLogger(PersistenceDB.class);
 
-    DatabaseConnection dbConnection = null;
+    DataSource dataSource = null;
     Hashtable props = null;
     String dbUrl, dbDriver, dbUser, dbPwd;
 
@@ -64,11 +66,14 @@ public class PersistenceDB implements Persistence {
         this.props = props;
         try {
             if (props != null) {
-                dbUrl = (String) props.get("db.url");
-                dbDriver = (String) props.get("db.driver");
-                dbUser = (String) props.get("db.user");
-                dbPwd = (String) props.get("db.pwd");
-                dbConnection = new DatabaseConnection(dbUrl, dbDriver);
+                if (props.containsKey("db.datasource")) {
+                    dataSource = (DataSource) props.get("db.datasource");
+                } else {
+                    dbUrl = (String) props.get("db.url");
+                    dbDriver = (String) props.get("db.driver");
+                    dbUser = (String) props.get("db.user");
+                    dbPwd = (String) props.get("db.pwd");
+                }
             }
 
             checkAclTables();
@@ -96,7 +101,7 @@ public class PersistenceDB implements Persistence {
      */
     private void checkAclTables() throws SQLException, DbNotSupportedException {
 
-        if (dbConnection == null) {
+        if (dbDriver == null && dataSource == null) {
             throw new SQLException("No Database Connection");
         }
 
@@ -433,13 +438,28 @@ public class PersistenceDB implements Persistence {
     }
 
 
+
     /**
      * Returns new database connection.
      *
      * @throws ServiceException if no connections were available.
      */
     public Connection getConnection() throws SQLException {
-        return dbConnection.getConnection(dbUser, dbPwd);
+        Connection con = null;
+        try {
+            if (dataSource != null) {
+                 con = dataSource.getConnection();
+            } else {
+                Class.forName(dbDriver);
+                con = DriverManager.getConnection(dbUrl, dbUser, dbPwd);
+            }
+        } catch (Throwable t) {
+            //set global variable to false to make the AccessController to read ACLS from the database until it is fixed
+            AccessController.dbInError = true;
+            throw new SQLException("Failed to get database connection " + t);
+        }
+        AccessController.dbInError = false;
+        return con;
      }
 
     private int executeUpdate(String sql) throws SQLException {
