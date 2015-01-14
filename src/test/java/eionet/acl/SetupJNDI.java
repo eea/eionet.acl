@@ -30,16 +30,14 @@ public class SetupJNDI {
         ic.createSubcontext("java:/comp/env/jdbc");
         ic.createSubcontext("java:/comp/env/acl");
 
-        ic.bind(subContext + "application.acl.folder", "target/test-classes");
-        ic.bind(subContext + "application.localgroups.file", "target/test-classes/acl.group");
-        ic.bind(subContext + "application.permissions.file", "target/test-classes/acl.prms");
-        ic.bind(subContext + "acl.owner.permission", "c");
-        ic.bind(subContext + "acl.admin", "true");
-        ic.bind(subContext + "acl.authenticated.access", "authenticated");
-        ic.bind(subContext + "acl.anonymous.access", "anonymous");
-        ic.bind(subContext + "acl.localusers.xml", "target/test-classes/users.xml");
-        ic.bind(subContext + "componentservices", "HelpService");
-        ic.bind(subContext + "componentservices.HelpService.provider", "com.tee.uit.help.RemoteService");
+        ic.bind(subContext + "file.aclfolder", "target/test-classes");
+        ic.bind(subContext + "file.localgroups", "target/test-classes/acl.group");
+        ic.bind(subContext + "file.permissions", "target/test-classes/acl.prms");
+        ic.bind(subContext + "file.localusers", "target/test-classes/users.xml");
+        ic.bind(subContext + "owner.permission", "c");
+        ic.bind(subContext + "admin", "true");
+        ic.bind(subContext + "authenticated.access", "authenticated");
+        ic.bind(subContext + "anonymous.access", "anonymous");
         ic.bind(subContext + "db.driver", "org.h2.Driver");
         ic.bind(subContext + "db.url", "jdbc:h2:mem:acl;MODE=MySQL");
         ic.bind(subContext + "db.user", "acl");
@@ -60,7 +58,7 @@ public class SetupJNDI {
         dataSource.setPassword("acl");
 
         InitialContext ic = new InitialContext();
-        ic.bind(subContext + "acl.datasource", dataSource);
+        ic.bind(subContext + "db.datasource", dataSource);
         isDSSetup = true;
     }
 }

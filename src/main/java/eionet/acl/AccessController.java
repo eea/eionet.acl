@@ -193,17 +193,17 @@ public final class AccessController {
                 throw new SignOnException("JNDI not configured properly");
             }
 
-            // Load from uit.properties.
+            // Load from acl.properties.
             if (props.size() == 0) {
                 try {
                     Properties fileProps = new Properties();
                     //this.getClass().getClassLoader()
-                    InputStream inStream = AccessController.class.getResourceAsStream("/uit.properties");
+                    InputStream inStream = AccessController.class.getResourceAsStream("/acl.properties");
                     fileProps.load(inStream);
                     inStream.close();
                     props.putAll(fileProps);
                 } catch (IOException mre) {
-                    throw new SignOnException("Properties file uit.properties is not found in the classpath");
+                    throw new SignOnException("Properties file acl.properties is not found in the classpath");
                 }
             }
         }
@@ -222,19 +222,19 @@ public final class AccessController {
         // read mandatory properties
         try {
 
-            ownerPrm = (String) props.get("acl.owner.permission");
+            ownerPrm = (String) props.get("owner.permission");
             // pre-defined entry name for anonymous access
-            anonymousEntry = (String) props.get("acl.anonymous.access");
+            anonymousEntry = (String) props.get("anonymous.access");
 
             // pre-defined entry name for authenticated access
-            authEntry = (String) props.get("acl.authenticated.access");
+            authEntry = (String) props.get("authenticated.access");
 
             if (props.containsKey("acl.defaultdoc.permissions")) {
-                defaultDocAndDccPermissions = (String) props.get("acl.defaultdoc.permissions");
+                defaultDocAndDccPermissions = (String) props.get("defaultdoc.permissions");
             }
 
             if (props.containsKey("acl.persistence.provider")) {
-                persistenceDriver = (String) props.get("acl.persistence.provider");
+                persistenceDriver = (String) props.get("persistence.provider");
             } else {
                 persistenceDriver = "eionet.acl.PersistenceMix";
             }

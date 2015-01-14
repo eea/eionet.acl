@@ -10,7 +10,7 @@
         </layout>
     </appender>
 
-    <logger name="com.tee.uit.security">
+    <logger name="eionet.acl">
         <level value="debug" />
     </logger>
 

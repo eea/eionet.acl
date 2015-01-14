@@ -66,9 +66,9 @@ public class PersistenceFile implements Persistence {
      * Constructor.
      */
     public PersistenceFile(Hashtable props) {
-        permissionsFileName = (String) props.get("application.permissions.file");
-        localgroupsFileName = (String) props.get("application.localgroups.file");
-        aclsFolderName = (String) props.get("application.acl.folder");
+        permissionsFileName = (String) props.get("file.permissions");
+        localgroupsFileName = (String) props.get("file.localgroups");
+        aclsFolderName = (String) props.get("file.aclfolder");
 
         fileReader = new AclFileReader();
     }

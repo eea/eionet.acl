@@ -20,14 +20,14 @@ public class TomcatJNDITest {
     @Test
     public void initialContextWithDS() throws Exception {
         Context ctx = new InitialContext();
-        DataSource ref = (DataSource) ctx.lookup("java:/comp/env/acl/acl.datasource");
+        DataSource ref = (DataSource) ctx.lookup("java:/comp/env/acl/db.datasource");
         assertTrue(ref.toString().contains("url=jdbc:h2:mem:acl;MODE=MySQL"));
     }
 
     @Test
     public void simpleStringLookup() throws Exception {
         Context ctx = new InitialContext();
-        String ref = (String) ctx.lookup("java:/comp/env/acl/acl.owner.permission");
+        String ref = (String) ctx.lookup("java:/comp/env/acl/owner.permission");
         assertEquals("c", ref);
     }
 }
