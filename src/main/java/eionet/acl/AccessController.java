@@ -229,11 +229,11 @@ public final class AccessController {
             // pre-defined entry name for authenticated access
             authEntry = (String) props.get("authenticated.access");
 
-            if (props.containsKey("acl.defaultdoc.permissions")) {
+            if (props.containsKey("defaultdoc.permissions")) {
                 defaultDocAndDccPermissions = (String) props.get("defaultdoc.permissions");
             }
 
-            if (props.containsKey("acl.persistence.provider")) {
+            if (props.containsKey("persistence.provider")) {
                 persistenceDriver = (String) props.get("persistence.provider");
             } else {
                 persistenceDriver = "eionet.acl.PersistenceMix";

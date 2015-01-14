@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+
+<!-- Database access, either a resource (preferred) or string properties -->
+    <Resource
+        name="acl/db.datasource"
+        auth="Container"
+        type="javax.sql.DataSource"
+        maxActive="100"
+        maxIdle="30"
+        maxWait="10000"
+        username="databaseuser"
+        password="databasepassword"
+        driverClassName="com.mysql.jdbc.Driver"
+        url="jdbc:mysql://localhost/acl?useUnicode=true&amp;characterEncoding=UTF-8"
+        validationQuery="SELECT 1"
+        testOnBorrow="true"
+        />
+<!-- Alternative -->
+    <Environment name="acl/db.driver" value="com.mysql.jdbc.Driver" type="java.lang.String" override="false"/>
+    <Environment name="acl/db.url" value="jdbc:mysql://localhost/acl?useUnicode=true&amp;characterEncoding=UTF-8"
+        type="java.lang.String" override="false"/>
+    <Environment name="acl/db.user" value="acl" type="java.lang.String" override="false"/>
+    <Environment name="acl/db.pwd" value="acl" type="java.lang.String" override="false"/>
+<!-- End database connection -->
+    <Environment name="acl/file.aclfolder" value="target/test-classes" type="java.lang.String" override="false"/>
+    <Environment name="acl/file.localgroups" value="target/test-classes/acl.group" type="java.lang.String" override="false"/>
+    <Environment name="acl/file.permissions" value="target/test-classes/acl.prms" type="java.lang.String" override="false"/>
+    <Environment name="acl/owner.permission" value="c" type="java.lang.String" override="false"/>
+    <Environment name="acl/authenticated.access" value="authenticated" type="java.lang.String" override="false"/>
+    <Environment name="acl/anonymous.access" value="anonymous" type="java.lang.String" override="false"/>
+    <Environment name="acl/file.localusers" value="target/test-classes/users.xml" type="java.lang.String" override="false"/>
+    <!--
+    <Environment name="acl/persistence.provider" value="eionet.acl.PersistenceMix" type="java.lang.String" override="false"/>
+    <Environment name="acl/defaultdoc.permissions" value="v,i,u,d,c" type="java.lang.String" override="false"/>
+    -->
+</Context>
