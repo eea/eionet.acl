@@ -17,6 +17,7 @@ Another change, but one that has requires no change in code is that the eionet a
 Since version 3.0 there is a change in the way the library is configured.  It uses acl.properties instead of uit.properties. All properties starting with `acl.` or `application.` have lost that prefix, as all properties in the file are relevant to ACL only. Additionally, there are a few other changes.
 
 Here are the changes:
+
 | Version 1.0 and 2.0          | Version 3.0 |
 | -------------------          | ----------- |
 | acl.owner.permission         | owner.permission |
