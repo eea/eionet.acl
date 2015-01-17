@@ -11,13 +11,13 @@ import org.h2.jdbcx.JdbcDataSource;
 
 public class SetupJNDI {
 
-    static String subContext = "java:/comp/env/acl/";
-    static boolean isSetup = false;
-    static boolean isDSSetup = false;
+    static String aclContextLocation = "java:/comp/env/acl/";
+    static boolean isSetupCore = false;
+    static boolean isSetupPlain = false;
+    static boolean isSetupDS = false;
 
-    public static void setUpPlain() throws Exception {
-        // Create initial context
-        if (isSetup) {
+    public static void setUpCore() throws Exception {
+        if (isSetupCore) {
             return;
         }
         System.setProperty(Context.INITIAL_CONTEXT_FACTORY, "org.apache.naming.java.javaURLContextFactory");
@@ -29,26 +29,35 @@ public class SetupJNDI {
         ic.createSubcontext("java:/comp/env");
         ic.createSubcontext("java:/comp/env/jdbc");
         ic.createSubcontext("java:/comp/env/acl");
+        isSetupCore = true;
+    }
 
-        ic.bind(subContext + "file.aclfolder", "target/test-classes");
-        ic.bind(subContext + "file.localgroups", "target/test-classes/acl.group");
-        ic.bind(subContext + "file.permissions", "target/test-classes/acl.prms");
-        ic.bind(subContext + "file.localusers", "target/test-classes/users.xml");
-        ic.bind(subContext + "owner.permission", "c");
-        ic.bind(subContext + "admin", "true");
-        ic.bind(subContext + "authenticated.access", "authenticated");
-        ic.bind(subContext + "anonymous.access", "anonymous");
-        ic.bind(subContext + "db.driver", "org.h2.Driver");
-        ic.bind(subContext + "db.url", "jdbc:h2:mem:acl;MODE=MySQL");
-        ic.bind(subContext + "db.user", "acl");
-        ic.bind(subContext + "db.pwd", "acl");
-        isSetup = true;
+    public static void setUpPlain() throws Exception {
+        if (isSetupPlain) {
+            return;
+        }
+        setUpCore();
+        InitialContext ic = new InitialContext();
+        ic.bind(aclContextLocation + "file.aclfolder", "target/test-classes");
+        ic.bind(aclContextLocation + "file.localgroups", "target/test-classes/acl.group");
+        ic.bind(aclContextLocation + "file.permissions", "target/test-classes/acl.prms");
+        ic.bind(aclContextLocation + "file.localusers", "target/test-classes/users.xml");
+        ic.bind(aclContextLocation + "owner.permission", "c");
+        ic.bind(aclContextLocation + "admin", "true");
+        ic.bind(aclContextLocation + "authenticated.access", "authenticated");
+        ic.bind(aclContextLocation + "anonymous.access", "anonymous");
+        ic.bind(aclContextLocation + "db.driver", "org.h2.Driver");
+        ic.bind(aclContextLocation + "db.url", "jdbc:h2:mem:acl;MODE=MySQL");
+        ic.bind(aclContextLocation + "db.user", "acl");
+        ic.bind(aclContextLocation + "db.pwd", "acl");
+        isSetupPlain = true;
     }
 
     public static void setUpWithDataSource() throws Exception {
+        setUpCore();
         setUpPlain();
 
-        if (isDSSetup) {
+        if (isSetupDS) {
             return;
         }
         // Construct DataSource
@@ -58,7 +67,14 @@ public class SetupJNDI {
         dataSource.setPassword("acl");
 
         InitialContext ic = new InitialContext();
-        ic.bind(subContext + "db.datasource", dataSource);
-        isDSSetup = true;
+        ic.bind(aclContextLocation + "db.datasource", dataSource);
+        isSetupDS = true;
     }
+
+    public static void setUpWithPropFile(String filename) throws Exception {
+        setUpCore();
+        InitialContext ic = new InitialContext();
+        ic.bind(aclContextLocation + "propertiesfile", "target/test-classes/" + filename);
+    }
+
 }

@@ -13,8 +13,8 @@
         <checkstyle.config.location>${basedir}/doc/checkstyle.xml</checkstyle.config.location>
     </properties>
 
-    <version>2.1</version>
-    <name>ACL 2</name>
+    <version>3.0</version>
+    <name>ACL</name>
     <url>https://github.com/eea</url>
 
     <!-- configuration of Maven repositories to be used -->

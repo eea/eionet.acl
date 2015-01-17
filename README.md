@@ -1,4 +1,4 @@
-ACL Module 2.1
+ACL Module 3.0
 ==============
 
 This is a module that implements an Access Control Mechanism based on Distributed Computing Environment.
@@ -14,10 +14,10 @@ Another change, but one that has requires no change in code is that the eionet a
 </dependency>
 ```
 
-Since version 2.1 there is also a change in the way the library is configured.  It uses acl.properties instead of uit.properties.. All properties starting with `acl.` or `application.` have lost that prefix, as all properties in the file are relevant to ACL only. Additionally, there are a few other changes.
+Since version 3.0 there is a change in the way the library is configured.  It uses acl.properties instead of uit.properties. All properties starting with `acl.` or `application.` have lost that prefix, as all properties in the file are relevant to ACL only. Additionally, there are a few other changes.
 
 Here are the changes:
-| Version 1.0 and 2.0          | Version 2.1 |
+| Version 1.0 and 2.0          | Version 3.0 |
 | -------------------          | ----------- |
 | acl.owner.permission         | owner.permission |
 | acl.anonymous.access         | anonymous.access |
@@ -33,7 +33,7 @@ Here are the changes:
 | db.user                      | db.user |
 | db.pwd                       | db.pwd |
 
-To upgrade to version 2.1, copy the uit.properties file to acl.properties. Delete all properties in uit.properties with a name from the above table. Delete all properties in acl.properties that are not in the table.
+To upgrade to version 3.0, copy the uit.properties file to acl.properties. Delete all properties in uit.properties with a name from the above table. Delete all properties in acl.properties that are not in the table.
 
 Installation
 ------------
@@ -78,7 +78,7 @@ The package can be configured via JNDI or a properties file. If a environment en
     <Environment name="acl/owner.permission" value="c" type="java.lang.String" override="false"/>
 </Context>
 ```
-Instead of using `acl/db.driver`, `acl/db.url` to set up the connection to the database it is also possible to use a `acl/db.datasource`.
+Instead of using `acl/db.driver`, `acl/db.url` to set up the connection to the database it is also possible to use a `acl/db.datasource`. When you set up the data source directly in JNDI, it should be possible to use a `<ResourceLink>` element to the webapp's data source, but this has not been tested yet.
 
 ```xml
 <Context>
@@ -87,6 +87,7 @@ Instead of using `acl/db.driver`, `acl/db.url` to set up the connection to the d
         type="javax.sql.DataSource"
         maxActive="100"
 ...
+    />
 </Context>
 ```
 
