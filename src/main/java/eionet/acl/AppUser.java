@@ -69,7 +69,7 @@ public class AppUser {
      *
      * @param user - the account you want to be.
      */
-    void authenticateForTest(String user) {
+    public void authenticateForTest(String user) {
         _userName = user;
     }
 

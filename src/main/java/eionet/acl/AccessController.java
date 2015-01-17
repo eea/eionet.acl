@@ -24,6 +24,7 @@
 
 package eionet.acl;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.security.acl.Permission;
@@ -190,20 +191,32 @@ public final class AccessController {
                     }
                 }
             } catch (NamingException mre) {
-                throw new SignOnException("JNDI not configured properly");
+                //throw new SignOnException("JNDI not configured properly");
             }
 
-            // Load from acl.properties.
-            if (props.size() == 0) {
+            // Load from properties file
+            if (props.size() == 0 || props.containsKey("propertiesfile")) {
                 try {
                     Properties fileProps = new Properties();
-                    //this.getClass().getClassLoader()
-                    InputStream inStream = AccessController.class.getResourceAsStream("/acl.properties");
+                    InputStream inStream = null;
+
+                    if (props.containsKey("propertiesfile")) {
+                        try {
+                            inStream = new FileInputStream((String) props.get("propertiesfile"));
+                        } catch (Exception e) {
+                            throw new SignOnException("Properties file not found");
+                        }
+                    } else {
+                        inStream = AccessController.class.getResourceAsStream("/acl.properties");
+                        if (inStream == null) {
+                            throw new SignOnException("Properties file acl.properties is not found in the classpath");
+                        }
+                    }
                     fileProps.load(inStream);
                     inStream.close();
                     props.putAll(fileProps);
                 } catch (IOException mre) {
-                    throw new SignOnException("Properties file acl.properties is not found in the classpath");
+                    throw new SignOnException("Properties file acl.properties is not readable");
                 }
             }
         }

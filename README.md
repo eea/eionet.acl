@@ -3,9 +3,9 @@ ACL Module 2.1
 
 This is a module that implements an Access Control Mechanism based on Distributed Computing Environment.
 
-Version 2.1 has the same public interface as version 1.x except the package name space is changed from `com.tee.uit.security` to `eionet.acl`.
+Version 2.0 has the same public interface as version 1.x except the package name space is changed from `com.tee.uit.security` to `eionet.acl`.
 
-Another change, but one that has requires no change in code is that the eionet acl-impl library has been included since version 2.0. This contains the SUN Microsystems implementation of groups, users etc. The only effect is that you _might_ have to remove the following in your pom.xml.
+Another change, but one that has requires no change in code is that the eionet acl-impl library has been included. This contains the SUN Microsystems implementation of groups, users etc. The only effect is that you _might_ have to remove the following in your pom.xml.
 ```xml
 <dependency>
     <groupId>eionet.acl</groupId>
@@ -14,11 +14,11 @@ Another change, but one that has requires no change in code is that the eionet a
 </dependency>
 ```
 
-There is also a change in the way the library is configured.  It uses acl.properties instead of uit.properties.. All properties starting with `acl.` or `application.` have lost that prefix, as all properties in the file are relevant to ACL only. Additionally, there are a few other changes.
+Since version 2.1 there is also a change in the way the library is configured.  It uses acl.properties instead of uit.properties.. All properties starting with `acl.` or `application.` have lost that prefix, as all properties in the file are relevant to ACL only. Additionally, there are a few other changes.
 
 Here are the changes:
-| Version 1                    | Version 2.1 |
-| ---------                    | ----------- |
+| Version 1.0 and 2.0          | Version 2.1 |
+| -------------------          | ----------- |
 | acl.owner.permission         | owner.permission |
 | acl.anonymous.access         | anonymous.access |
 | acl.authenticated.access     | authenticated.access |
@@ -92,6 +92,14 @@ Instead of using `acl/db.driver`, `acl/db.url` to set up the connection to the d
 
 Alternatively copy `acl.properties` from `src/test/resources` to your project's classpath and change the property values accordingly. Note that the file and folder paths in the `acl.properties` are relative because of unit tests. For other usage, absolute paths should be used.
 
+If you want to continue with property files, but specify with JNDI, what file to load the properties from, then you can add a context environment variable called `acl/propertiesfile`
+```xml
+<Context>
+    <Environment name="acl/propertiesfile"
+                 value="/var/local/datadict/acl.properties"
+                 type="java.lang.String" override="false"/>
+</Context>
+```
 
 Unit tests
 ----------
