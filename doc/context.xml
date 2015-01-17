@@ -26,10 +26,10 @@
     <Environment name="acl/file.aclfolder" value="target/test-classes" type="java.lang.String" override="false"/>
     <Environment name="acl/file.localgroups" value="target/test-classes/acl.group" type="java.lang.String" override="false"/>
     <Environment name="acl/file.permissions" value="target/test-classes/acl.prms" type="java.lang.String" override="false"/>
+    <Environment name="acl/file.localusers" value="target/test-classes/users.xml" type="java.lang.String" override="false"/>
     <Environment name="acl/owner.permission" value="c" type="java.lang.String" override="false"/>
     <Environment name="acl/authenticated.access" value="authenticated" type="java.lang.String" override="false"/>
     <Environment name="acl/anonymous.access" value="anonymous" type="java.lang.String" override="false"/>
-    <Environment name="acl/file.localusers" value="target/test-classes/users.xml" type="java.lang.String" override="false"/>
     <!--
     <Environment name="acl/persistence.provider" value="eionet.acl.PersistenceMix" type="java.lang.String" override="false"/>
     <Environment name="acl/defaultdoc.permissions" value="v,i,u,d,c" type="java.lang.String" override="false"/>
