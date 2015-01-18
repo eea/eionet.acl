@@ -52,6 +52,8 @@ import eionet.acl.impl.PermissionImpl;
  */
 public final class AccessController {
 
+    public static final String TOMCAT_CONTEXT = "java:/comp/env/";
+
     /** ACLs. */
     private static HashMap<String, AccessControlListIF> acls;
 
@@ -185,7 +187,7 @@ public final class AccessController {
                 Context initContext = new InitialContext();
                 if (initContext != null) {
                     // Load from JNDI. Tomcat puts its stuff under java:comp/env:
-                    for (Enumeration<Binding> e = initContext.listBindings("java:/comp/env/acl"); e.hasMoreElements();) {
+                    for (Enumeration<Binding> e = initContext.listBindings(TOMCAT_CONTEXT + "acl"); e.hasMoreElements();) {
                         Binding binding = e.nextElement();
                         props.put(binding.getName(), binding.getObject());
                     }
