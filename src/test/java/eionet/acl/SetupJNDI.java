@@ -11,7 +11,7 @@ import org.h2.jdbcx.JdbcDataSource;
 
 public class SetupJNDI {
 
-    static String aclContextLocation = "java:/comp/env/acl/";
+    static String aclContextLocation = "java:comp/env/acl/";
     static boolean isSetupCore = false;
     static boolean isSetupPlain = false;
     static boolean isSetupDS = false;
@@ -25,10 +25,10 @@ public class SetupJNDI {
         InitialContext ic = new InitialContext();
 
         ic.createSubcontext("java:");
-        ic.createSubcontext("java:/comp");
-        ic.createSubcontext("java:/comp/env");
-        ic.createSubcontext("java:/comp/env/jdbc");
-        ic.createSubcontext("java:/comp/env/acl");
+        ic.createSubcontext("java:comp");
+        ic.createSubcontext("java:comp/env");
+        ic.createSubcontext("java:comp/env/jdbc");
+        ic.createSubcontext("java:comp/env/acl");
         isSetupCore = true;
     }
 

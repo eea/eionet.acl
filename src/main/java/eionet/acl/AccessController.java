@@ -52,7 +52,7 @@ import eionet.acl.impl.PermissionImpl;
  */
 public final class AccessController {
 
-    public static final String TOMCAT_CONTEXT = "java:/comp/env/";
+    public static final String TOMCAT_CONTEXT = "java:comp/env/";
 
     /** ACLs. */
     private static HashMap<String, AccessControlListIF> acls;
