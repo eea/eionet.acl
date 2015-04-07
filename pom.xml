@@ -13,19 +13,26 @@
         <checkstyle.config.location>${basedir}/doc/checkstyle.xml</checkstyle.config.location>
     </properties>
 
-    <version>3.0</version>
+    <version>3.1-SNAPSHOT</version>
     <name>ACL</name>
     <url>https://github.com/eea</url>
 
     <!-- configuration of Maven repositories to be used -->
-
     <repositories>
         <repository>
-            <id>eea</id>
-            <name>EEA Release Repository</name>
-            <url>http://archiva.eionet.europa.eu/repository/internal</url>
+            <id>archiva.internal</id>
+            <name>Internal Release Repository</name>
+            <url>http://archiva.eionet.europa.eu/repository/internal/</url>
             <snapshots>
                 <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>archiva.snapshots</id>
+            <name>Internal Snapshot Repository</name>
+            <url>http://archiva.eionet.europa.eu/repository/snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
             </snapshots>
         </repository>
     </repositories>
@@ -128,7 +135,7 @@
         <dependency>
             <groupId>eionet</groupId>
             <artifactId>eionet-dir</artifactId>
-            <version>2.5</version>
+            <version>3.0-SNAPSHOT</version> <!-- Use prerelease -->
         </dependency>
         <!--
         <dependency>

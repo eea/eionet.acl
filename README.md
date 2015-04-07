@@ -1,5 +1,5 @@
-ACL Module 3.0
-==============
+ACL Module 3.1-SNAPSHOT
+=======================
 
 This is a module that implements an Access Control Mechanism based on Distributed Computing Environment.
 
@@ -35,6 +35,10 @@ Here are the changes:
 | db.pwd                       | db.pwd |
 
 To upgrade to version 3.0, copy the uit.properties file to acl.properties. Delete all properties in uit.properties with a name from the above table. Delete all properties in acl.properties that are not in the table.
+
+### New in version 3.1
+
+Dependency changed to version 3.0-SNAPSHOT of Eionet directory module.
 
 Installation
 ------------
@@ -122,3 +126,14 @@ boolean access = AccessController.hasPermission("kaido", "/contracts/sa55727" , 
 TODO
 ----
 The concept of ownership is broken. The file-based ACLs don't support it at all, and the database ACLs don't support change of ownership. Additionally, the ownership is for the protected object _and_ the ACL. In some cases, the ownership is stored in the protected object, and there should be an API the application can use to declare that the user checking permission 'x' is also the owner of the object.
+
+Releasing new versions
+----------------------
+While developing a new version, add *-SNAPSHOT* to the upcoming version id in pom.xml. When you are satisfied with the result, remove the the *-SNAPSHOT* part, and commit. Then you tag the release, deploy it, increase the minor number and append *-SNAPSHOT* again.
+```sh
+git tag -a v3.1 -m "Version 3.1"
+git push origin v3.1
+mvn deploy
+# Increase to 3.2-SNAPSHOT in pom.xml
+git commit pom.xml
+```
