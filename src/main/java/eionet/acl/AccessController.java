@@ -21,12 +21,8 @@
  * Original Code: Kaido Laine (TietoEnator)
  * Contributor: Søren Roug
  */
-
 package eionet.acl;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.IOException;
 import java.security.acl.Permission;
 import java.security.Principal;
 import java.security.acl.Group;
@@ -34,18 +30,17 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-import java.util.Properties;
 import java.util.Vector;
-import java.lang.reflect.Constructor;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.Binding;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 import eionet.acl.impl.PermissionImpl;
+import eu.europa.eionet.propertyplaceholderresolver.CircularReferenceException;
+import eu.europa.eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
+import eu.europa.eionet.propertyplaceholderresolver.UnresolvedPropertyException;
+import eu.europa.eionet.propertyplaceholderresolver.util.ConfigurationLoadException;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Access point to the API for ACL operations.
@@ -54,40 +49,61 @@ public final class AccessController {
 
     public static final String TOMCAT_CONTEXT = "java:comp/env/";
 
-    /** ACLs. */
+    /**
+     * ACLs.
+     */
     private static HashMap<String, AccessControlListIF> acls;
 
-    /** System properties. */
-    private static Hashtable props;
-
+    /**
+     * System properties.
+     */
     private static String persistenceDriver;
 
-    /** File operations. */
+    /**
+     * File operations.
+     */
     private static Persistence permStorage;
 
-    /** Permission to indicate ownership for the ACL. */
+    /**
+     * Permission to indicate ownership for the ACL.
+     */
     static String ownerPrm = "";
 
-    /** Reserved username for entries of anonymous access. */
+    /**
+     * Reserved username for entries of anonymous access.
+     */
     static String anonymousEntry = "";
-    /** Reserved username for entries for authenticated users. */
+    /**
+     * Reserved username for entries for authenticated users.
+     */
     static String authEntry = "";
 
-    /** HashMap for groups. */
+    /**
+     * HashMap for groups.
+     */
     static HashMap<String, Group> groups;
-    /** HashMap for user entries. */
+    /**
+     * HashMap for user entries.
+     */
     static HashMap<String, Principal> users;
-    /** HashMap for permissions. */
+    /**
+     * HashMap for permissions.
+     */
     static HashMap<String, Permission> permissions;
-    /** HashMap for permission descriptions. */
+    /**
+     * HashMap for permission descriptions.
+     */
     static Hashtable<String, String> prmDescrs;
+    private static ConfigurationPropertyResolver configurationPropertyResolver;
 
-    /** Default permissions for ACLs when no DOC and DCC defined. */
+    /**
+     * Default permissions for ACLs when no DOC and DCC defined.
+     */
     static String defaultDocAndDccPermissions = "v,i,u,d,c";
 
     /**
-     * Indicates if database connection has been lost.
-     * if it is in error ACLs are re-initialized
+     * Indicates if database connection has been lost. if it is in error ACLs
+     * are re-initialized
      */
     static boolean dbInError = false;
 
@@ -95,7 +111,20 @@ public final class AccessController {
      * Prevent direct initialization.
      */
     private AccessController() {
+    }
 
+    /**
+     * Super dirty hack to allow quick re-implementation. TODO: Refactor this
+     * structure as a regular object to be injected into other modules/apps.
+     *
+     * @param configurationPropertyResolver
+     */
+    public AccessController(ConfigurationPropertyResolver configurationPropertyResolver) {
+        initAccessController(configurationPropertyResolver);
+    }
+
+    public static void initAccessController(ConfigurationPropertyResolver configurationPropertyResolver) {
+        AccessController.configurationPropertyResolver = configurationPropertyResolver;
     }
 
     /**
@@ -172,95 +201,46 @@ public final class AccessController {
     }
 
     /**
-     * Load properties from JNDI context or properties file as fall-back.
-     *
-     * @return Hashtable of the properties
-     * @throws SignOnException if no file found.
-     */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    static Hashtable getProperties() throws SignOnException {
-
-        if (props == null) {
-            props = new Hashtable<Object,Object>();
-
-            try {
-                Context initContext = new InitialContext();
-                if (initContext != null) {
-                    // Load from JNDI. Tomcat puts its stuff under java:comp/env:
-                    for (Enumeration<Binding> e = initContext.listBindings(TOMCAT_CONTEXT + "acl"); e.hasMoreElements();) {
-                        Binding binding = e.nextElement();
-                        props.put(binding.getName(), binding.getObject());
-                    }
-                }
-            } catch (NamingException mre) {
-                //throw new SignOnException("JNDI not configured properly");
-            }
-
-            // Load from properties file
-            if (props.size() == 0 || props.containsKey("propertiesfile")) {
-                try {
-                    Properties fileProps = new Properties();
-                    InputStream inStream = null;
-
-                    if (props.containsKey("propertiesfile")) {
-                        try {
-                            inStream = new FileInputStream((String) props.get("propertiesfile"));
-                        } catch (Exception e) {
-                            throw new SignOnException("Properties file not found");
-                        }
-                    } else {
-                        inStream = AccessController.class.getResourceAsStream("/acl.properties");
-                        if (inStream == null) {
-                            throw new SignOnException("Properties file acl.properties is not found in the classpath");
-                        }
-                    }
-                    fileProps.load(inStream);
-                    inStream.close();
-                    props.putAll(fileProps);
-                } catch (IOException mre) {
-                    throw new SignOnException("Properties file acl.properties is not readable");
-                }
-            }
-        }
-        return props;
-    }
-
-    /**
      * Reads values from the property file.
      *
      * @throws SignOnException if property is missing.
      */
     private static void readProperties() throws SignOnException {
 
-        props = getProperties();
-
         // read mandatory properties
         try {
 
-            ownerPrm = (String) props.get("owner.permission");
+            ownerPrm = configurationPropertyResolver.resolveValue("owner.permission");
             // pre-defined entry name for anonymous access
-            anonymousEntry = (String) props.get("anonymous.access");
+            anonymousEntry = configurationPropertyResolver.resolveValue("anonymous.access");
 
             // pre-defined entry name for authenticated access
-            authEntry = (String) props.get("authenticated.access");
+            authEntry = configurationPropertyResolver.resolveValue("authenticated.access");
 
-            if (props.containsKey("defaultdoc.permissions")) {
-                defaultDocAndDccPermissions = (String) props.get("defaultdoc.permissions");
+            if (configurationPropertyResolver.isDefined("defaultdoc.permissions")) {
+                defaultDocAndDccPermissions = configurationPropertyResolver.resolveValue("defaultdoc.permissions");
             }
 
-            if (props.containsKey("persistence.provider")) {
-                persistenceDriver = (String) props.get("persistence.provider");
+            if (configurationPropertyResolver.isDefined("persistence.provider")) {
+                persistenceDriver = configurationPropertyResolver.resolveValue("persistence.provider");
             } else {
                 persistenceDriver = "eionet.acl.PersistenceMix";
             }
 
-        } catch (MissingResourceException mre) {
-            throw new SignOnException("Property is missing: " + mre.toString());
+        } catch (UnresolvedPropertyException ex) {
+            handleResolverException(ex);
+        } catch (CircularReferenceException ex) {
+            handleResolverException(ex);
         }
 
         if (ownerPrm.length() > 1) {
             throw new SignOnException("Permission must be one letter");
         }
+    }
+
+    private static void handleResolverException(Exception ex) throws SignOnException {
+        Logger.getLogger(AccessController.class.getName()).log(Level.SEVERE, null, ex);
+        throw new SignOnException(ex, ex.getMessage());
     }
 
     /**
@@ -292,14 +272,14 @@ public final class AccessController {
         Enumeration<? extends Principal> members = g.members();
         Vector<String> m = new Vector<String>();
         while (members.hasMoreElements()) {
-            m.add(((Principal)members.nextElement()).getName());
+            m.add(((Principal) members.nextElement()).getName());
         }
         return m;
     }
 
     /**
-     * Method to check if the user has the requested permission. If the user name is null
-     * or empty then the user is not authenticated.
+     * Method to check if the user has the requested permission. If the user
+     * name is null or empty then the user is not authenticated.
      *
      * @param userName - name of the account
      * @param aclPath - like "/" or "/whatever"
@@ -313,29 +293,29 @@ public final class AccessController {
     }
 
     /**
-     * Method to check if the user has the requested permission. If the principal is null
-     * then the user is not authenticated.
+     * Method to check if the user has the requested permission. If the
+     * principal is null then the user is not authenticated.
      *
-     * @param principal - User object that implements the UserPrincipal interface.
+     * @param principal - User object that implements the UserPrincipal
+     * interface.
      * @param aclPath - like "/" or "/whatever"
      * @param permissionFlag - Permission flag - like "r".
      * @return true if the user has the requested permission.
      * @throws SignOnException if reading fails
      */
     /*
-    public static boolean hasPermission(Principal principal, String aclPath, String permissionFlag) throws SignOnException {
-        AccessControlListIF acl = getAcl(aclPath);
-        if (principal != null) {
-            return acl.checkPermission(principal.getName(), permissionFlag);
-        } else {
-            return acl.checkPermission(null, permissionFlag);
-        }
-    }
-    */
-
+     public static boolean hasPermission(Principal principal, String aclPath, String permissionFlag) throws SignOnException {
+     AccessControlListIF acl = getAcl(aclPath);
+     if (principal != null) {
+     return acl.checkPermission(principal.getName(), permissionFlag);
+     } else {
+     return acl.checkPermission(null, permissionFlag);
+     }
+     }
+     */
     /**
-     * Returns permissions of the user in all ACls.
-     * Format: ACLName:p1,ACLName:p2,AclName2:p1,
+     * Returns permissions of the user in all ACls. Format:
+     * ACLName:p1,ACLName:p2,AclName2:p1,
      *
      * @param user username
      * @return permissions of user in required format
@@ -375,7 +355,6 @@ public final class AccessController {
         return s.toString();
     }
 
-
     /**
      * Read groups from an XML file and set to the controller.
      *
@@ -385,7 +364,6 @@ public final class AccessController {
     static void setGroups(Hashtable<String, Group> groups) throws SignOnException {
         permStorage.writeGroups(groups);
     }
-
 
     /**
      * HARD-CODED permissions for ACL "localgroups".
@@ -410,9 +388,9 @@ public final class AccessController {
     static Persistence getPersistence() {
         if (permStorage == null) {
             try {
-            Class fsClass = Class.forName(persistenceDriver);
-            Constructor constructor = fsClass.getConstructor(Hashtable.class);
-            permStorage = (Persistence) constructor.newInstance(props);
+                Class fsClass = Class.forName(persistenceDriver);
+                Constructor constructor = fsClass.getConstructor(ConfigurationPropertyResolver.class);
+                permStorage = (Persistence) constructor.newInstance(configurationPropertyResolver);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -463,8 +441,8 @@ public final class AccessController {
     }
 
     /**
-     * Remove an ACL from the application.
-     * If the ACL is not held in DB table this API function cannot be used.
+     * Remove an ACL from the application. If the ACL is not held in DB table
+     * this API function cannot be used.
      *
      * @param aclPath full ACL path
      * @throws SignOnException if no ACL or no DB support
@@ -488,12 +466,13 @@ public final class AccessController {
     }
 
     /**
-     * Rename ACL.
-     * If the ACL is not held in DB table this API function cannot be used.
+     * Rename ACL. If the ACL is not held in DB table this API function cannot
+     * be used.
      *
      * @param aclPath - existing ACL full path
      * @param newAclPath - new ACL full path
-     * @throws SignOnException if renaming fails: no ACL or ACL with  the new name exists
+     * @throws SignOnException if renaming fails: no ACL or ACL with the new
+     * name exists
      */
     public static void renameAcl(String aclPath, String newAclPath) throws SignOnException {
 
@@ -515,6 +494,10 @@ public final class AccessController {
             throw new SignOnException("DB operation failed : " + e.toString());
         }
         reset();
+    }
+
+    public static ConfigurationPropertyResolver getConfigurationPropertyResolver() {
+        return configurationPropertyResolver;
     }
 
     /**
