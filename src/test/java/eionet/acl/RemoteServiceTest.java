@@ -1,18 +1,13 @@
 package eionet.acl;
 
+import eu.europa.eionet.propertyplaceholderresolver.ConfigurationDefinitionProviderImpl;
+import eu.europa.eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
+import eu.europa.eionet.propertyplaceholderresolver.ConfigurationPropertyResolverImpl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
-import java.util.ResourceBundle;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -38,6 +33,12 @@ public class RemoteServiceTest extends ACLDatabaseTestCase {
         myUser.authenticateForTest("enriko");
 
         rs = new RemoteService(myUser);
+    }
+    
+    @Before
+    public void setUp() throws Exception {
+        ConfigurationPropertyResolver propertyResolver = new ConfigurationPropertyResolverImpl(new ConfigurationDefinitionProviderImpl("acl.properties"));
+        AccessController.initAccessController(propertyResolver);
     }
 
     /**

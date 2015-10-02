@@ -1,5 +1,8 @@
 package eionet.acl;
 
+import eu.europa.eionet.propertyplaceholderresolver.ConfigurationDefinitionProviderImpl;
+import eu.europa.eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
+import eu.europa.eionet.propertyplaceholderresolver.ConfigurationPropertyResolverImpl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -10,6 +13,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
+import org.junit.Before;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,6 +29,12 @@ public class AccessControlListTest extends ACLDatabaseTestCase {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
+    @Before
+    public void setUp() throws Exception {
+        ConfigurationPropertyResolver propertyResolver = new ConfigurationPropertyResolverImpl(new ConfigurationDefinitionProviderImpl("acl.properties"));
+        AccessController.initAccessController(propertyResolver);
+    }
+    
     /**
      * Tests various methods of AccessControlListIF, but also makes sure the code is still able to handle ACL files that are not in
      * XML format, because the tests here are run on _whatever.acl, which is indeed in the old format.

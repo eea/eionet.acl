@@ -20,9 +20,9 @@
  *
  * Original Code: Kaido Laine (TietoEnator)
  */
-
 package eionet.acl;
 
+import eu.europa.eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
 import java.security.Principal;
 import java.security.acl.Group;
 import java.security.acl.Permission;
@@ -34,25 +34,25 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-
 /**
- * This class mixes the capabilities of two classes to support
- * the legacy.
+ * This class mixes the capabilities of two classes to support the legacy.
  */
 class PersistenceMix implements Persistence {
 
-    /** logger instance. */
+    /**
+     * logger instance.
+     */
     private static final Logger LOGGER = Logger.getLogger(PersistenceMix.class);
-
+    private ConfigurationPropertyResolver configurationPropertyResolver;
     private PersistenceFile fileModule;
     private PersistenceDB dbModule;
 
-
-    public PersistenceMix(Hashtable props) {
-        fileModule = new PersistenceFile(props);
+    public PersistenceMix(ConfigurationPropertyResolver configurationPropertyResolver) {
+        this.configurationPropertyResolver = configurationPropertyResolver;
+        fileModule = new PersistenceFile(this.configurationPropertyResolver);
         //TODO: Only call dbModule if there is a property for it.
         try {
-            dbModule = new PersistenceDB(props);
+            dbModule = new PersistenceDB(this.configurationPropertyResolver);
         } catch (DbNotSupportedException e) {
             dbModule = null;
         }
@@ -101,7 +101,7 @@ class PersistenceMix implements Persistence {
 
     @Override
     public void addAcl(String aclPath, String owner, String description, boolean isFolder)
-                throws SQLException, SignOnException {
+            throws SQLException, SignOnException {
         if (dbModule != null) {
             dbModule.addAcl(aclPath, owner, description, isFolder);
         } else {

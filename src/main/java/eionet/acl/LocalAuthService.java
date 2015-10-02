@@ -63,7 +63,7 @@ public class LocalAuthService {
 
         String fileFullPath = null;
         try {
-            fileFullPath = (String) AccessController.getProperties().get("file.localusers");
+            fileFullPath = (String) AccessController.getConfigurationPropertyResolver().resolveValue("file.localusers");
         } catch (Exception mre) {
             supported = false;
             return;

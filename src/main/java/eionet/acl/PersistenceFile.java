@@ -20,7 +20,6 @@
  *
  * Original Code: Søren Roug
  */
-
 package eionet.acl;
 
 import java.io.IOException;
@@ -34,43 +33,66 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import eionet.acl.impl.AclImpl;
 import eionet.acl.impl.PrincipalImpl;
+import eu.europa.eionet.propertyplaceholderresolver.CircularReferenceException;
+import eu.europa.eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
+import eu.europa.eionet.propertyplaceholderresolver.UnresolvedPropertyException;
+import java.util.logging.Level;
 
 import org.apache.log4j.Logger;
-
 
 /**
  * File operations implementation.
  */
 public class PersistenceFile implements Persistence {
 
-    /** logger instance. */
+    /**
+     * logger instance.
+     */
     private static final Logger LOGGER = Logger.getLogger(PersistenceFile.class);
 
-    /** Folder where ACL files reside. */
+    /**
+     * Folder where ACL files reside.
+     */
     private String aclsFolderName;
 
-    /** File name for local groups. */
+    /**
+     * File name for local groups.
+     */
     private String localgroupsFileName;
 
-    /** File name for permissions. */
+    /**
+     * File name for permissions.
+     */
     private String permissionsFileName;
 
-    /** ACL files reader. */
+    /**
+     * ACL files reader.
+     */
     private AclFileReader fileReader;
-
 
     /**
      * Constructor.
      */
-    public PersistenceFile(Hashtable props) {
-        permissionsFileName = (String) props.get("file.permissions");
-        localgroupsFileName = (String) props.get("file.localgroups");
-        aclsFolderName = (String) props.get("file.aclfolder");
+    public PersistenceFile(ConfigurationPropertyResolver configurationPropertyResolver) {
+        try {
+            permissionsFileName = configurationPropertyResolver.resolveValue("file.permissions");
+            localgroupsFileName = configurationPropertyResolver.resolveValue("file.localgroups");
+            aclsFolderName = configurationPropertyResolver.resolveValue("file.aclfolder");
 
-        fileReader = new AclFileReader();
+            try {
+                AclInitializerImpl aclInitializer = new AclInitializerImpl("acl", configurationPropertyResolver);
+                aclInitializer.execute();
+            } catch (Exception ex) {
+                java.util.logging.Logger.getLogger(AccessController.class.getName()).severe(ex.getMessage());
+            }
+            fileReader = new AclFileReader();
+        } catch (UnresolvedPropertyException ex) {
+            java.util.logging.Logger.getLogger(PersistenceFile.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (CircularReferenceException ex) {
+            java.util.logging.Logger.getLogger(PersistenceFile.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -82,15 +104,17 @@ public class PersistenceFile implements Persistence {
     public void readPermissions(HashMap<String, Permission> permissions, Hashtable<String, String> prmDescrs)
             throws SignOnException {
         try {
-            if (XmlFileReaderWriter.isXmlFileWannabe(permissionsFileName))
+            if (XmlFileReaderWriter.isXmlFileWannabe(permissionsFileName)) {
                 XmlFileReaderWriter.readPermissions(permissionsFileName, permissions, prmDescrs);
-            else
+            } else {
                 fileReader.readPermissions(permissionsFileName, permissions, prmDescrs);
+            }
         } catch (IOException e) {
-            if (e instanceof java.io.FileNotFoundException)
+            if (e instanceof java.io.FileNotFoundException) {
                 throw new SignOnException(e, "No such file: " + localgroupsFileName);
-            else
+            } else {
                 throw new SignOnException(e, "I/O error reading file: " + localgroupsFileName);
+            }
         }
     }
 
@@ -101,15 +125,17 @@ public class PersistenceFile implements Persistence {
     @Override
     public void readGroups(HashMap<String, Group> groups, HashMap<String, Principal> users) throws SQLException, SignOnException {
         try {
-            if (XmlFileReaderWriter.isXmlFileWannabe(localgroupsFileName))
+            if (XmlFileReaderWriter.isXmlFileWannabe(localgroupsFileName)) {
                 XmlFileReaderWriter.readGroups(localgroupsFileName, groups, users);
-            else
+            } else {
                 fileReader.readGroups(localgroupsFileName, groups, users);
+            }
         } catch (IOException e) {
-            if (e instanceof java.io.FileNotFoundException)
+            if (e instanceof java.io.FileNotFoundException) {
                 throw new SignOnException(e, "No such file: " + localgroupsFileName);
-            else
+            } else {
                 throw new SignOnException(e, "I/O error reading file: " + localgroupsFileName);
+            }
         }
     }
 
@@ -154,14 +180,15 @@ public class PersistenceFile implements Persistence {
     }
 
     /**
-     * Reads an ACL. Due to the spaghetti structure of the original code,
-     * this won't work unless AccessController has been initialised.
+     * Reads an ACL. Due to the spaghetti structure of the original code, this
+     * won't work unless AccessController has been initialised.
+     *
      * @param aclName - the name of the ACL. e.g. "/groups"
      * @return access control list.
      */
     AccessControlList readAcl(String aclName) throws SignOnException {
-      File aclFile = new File(aclsFolderName, aclName.replace('/', '_') + ".acl");
-      return readAclFile(aclFile);
+        File aclFile = new File(aclsFolderName, aclName.replace('/', '_') + ".acl");
+        return readAclFile(aclFile);
     }
 
     /**
@@ -202,23 +229,24 @@ public class PersistenceFile implements Persistence {
 
         AclFileReader fReader = new AclFileReader();
         try {
-            if (XmlFileReaderWriter.isXmlFileWannabe(aclFileName))
+            if (XmlFileReaderWriter.isXmlFileWannabe(aclFileName)) {
                 XmlFileReaderWriter.readACL(aclFileName, acl);
-            else {
+            } else {
                 ArrayList<String> aRows = fReader.readFileRows(aclFileName);
                 acl.processAclRows(aRows);
             }
         } catch (IOException e) {
-            if (e instanceof java.io.FileNotFoundException)
+            if (e instanceof java.io.FileNotFoundException) {
                 throw new SignOnException(e, "No such file: " + aclFileName);
-            else
+            } else {
                 throw new SignOnException(e, "I/O error reading file: " + aclFileName);
+            }
         }
     }
 
     @Override
     public void addAcl(String aclPath, String owner, String description, boolean isFolder)
-                throws SQLException, SignOnException {
+            throws SQLException, SignOnException {
         throw new SignOnException("Method is not supported");
     }
 
@@ -229,8 +257,8 @@ public class PersistenceFile implements Persistence {
 
     @Override
     public void writeAcl(String aclName, Map<String, String> aclAttrs, List aclEntries) throws SignOnException {
-      File aclFile = new File(aclsFolderName, aclName.replace('/', '_') + ".acl");
-      XmlFileReaderWriter.writeACL(aclFile.getPath(), aclAttrs, aclEntries);
+        File aclFile = new File(aclsFolderName, aclName.replace('/', '_') + ".acl");
+        XmlFileReaderWriter.writeACL(aclFile.getPath(), aclAttrs, aclEntries);
     }
 
     @Override
@@ -242,6 +270,5 @@ public class PersistenceFile implements Persistence {
     public void renameAcl(String currentAclPath, String newAclPath) throws SQLException, SignOnException {
         throw new SignOnException("Method is not supported");
     }
-
 
 }

@@ -23,13 +23,14 @@
 
 package eionet.acl;
 
+import eu.europa.eionet.propertyplaceholderresolver.ConfigurationDefinitionProviderImpl;
+import eu.europa.eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
+import eu.europa.eionet.propertyplaceholderresolver.ConfigurationPropertyResolverImpl;
 import java.util.HashMap;
 import java.util.Vector;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -43,7 +44,8 @@ public class AccessControllerJNDITest extends ACLDatabaseTestCase {
 
     @Before
     public void setUp() throws Exception {
-        SetupJNDI.setUpPlain();
+        ConfigurationPropertyResolver propertyResolver = new ConfigurationPropertyResolverImpl(new ConfigurationDefinitionProviderImpl("acl.properties"));
+        AccessController.initAccessController(propertyResolver);
     }
 
     /**
