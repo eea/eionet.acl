@@ -24,7 +24,7 @@ package eionet.acl;
 
 import eionet.acl.impl.AclImpl;
 import eionet.acl.impl.PrincipalImpl;
-import eu.europa.eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
+import eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
 import java.security.acl.Group;
 import java.security.Principal;
 import java.sql.Connection;

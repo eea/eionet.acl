@@ -22,7 +22,7 @@
  */
 package eionet.acl;
 
-import eu.europa.eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
+import eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
 import java.security.Principal;
 import java.security.acl.Group;
 import java.security.acl.Permission;

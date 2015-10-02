@@ -1,9 +1,9 @@
 package eionet.acl;
 
-import eu.europa.eionet.propertyplaceholderresolver.CircularReferenceException;
-import eu.europa.eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
-import eu.europa.eionet.propertyplaceholderresolver.UnresolvedPropertyException;
-import eu.europa.eionet.propertyplaceholderresolver.util.ConfigurationLoadException;
+import eionet.propertyplaceholderresolver.CircularReferenceException;
+import eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
+import eionet.propertyplaceholderresolver.UnresolvedPropertyException;
+import eionet.propertyplaceholderresolver.util.ConfigurationLoadException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;

@@ -35,9 +35,9 @@ import java.util.List;
 import java.util.Map;
 import eionet.acl.impl.AclImpl;
 import eionet.acl.impl.PrincipalImpl;
-import eu.europa.eionet.propertyplaceholderresolver.CircularReferenceException;
-import eu.europa.eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
-import eu.europa.eionet.propertyplaceholderresolver.UnresolvedPropertyException;
+import eionet.propertyplaceholderresolver.CircularReferenceException;
+import eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
+import eionet.propertyplaceholderresolver.UnresolvedPropertyException;
 import java.util.logging.Level;
 
 import org.apache.log4j.Logger;

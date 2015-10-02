@@ -33,10 +33,10 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import eionet.acl.impl.PermissionImpl;
-import eu.europa.eionet.propertyplaceholderresolver.CircularReferenceException;
-import eu.europa.eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
-import eu.europa.eionet.propertyplaceholderresolver.UnresolvedPropertyException;
-import eu.europa.eionet.propertyplaceholderresolver.util.ConfigurationLoadException;
+import eionet.propertyplaceholderresolver.CircularReferenceException;
+import eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
+import eionet.propertyplaceholderresolver.UnresolvedPropertyException;
+import eionet.propertyplaceholderresolver.util.ConfigurationLoadException;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.logging.Level;

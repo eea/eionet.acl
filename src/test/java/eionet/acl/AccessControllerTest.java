@@ -23,9 +23,9 @@
 
 package eionet.acl;
 
-import eu.europa.eionet.propertyplaceholderresolver.ConfigurationDefinitionProviderImpl;
-import eu.europa.eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
-import eu.europa.eionet.propertyplaceholderresolver.ConfigurationPropertyResolverImpl;
+import eionet.propertyplaceholderresolver.ConfigurationDefinitionProviderImpl;
+import eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
+import eionet.propertyplaceholderresolver.ConfigurationPropertyResolverImpl;
 import java.util.HashMap;
 import java.util.Vector;
 
