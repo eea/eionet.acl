@@ -1,9 +1,5 @@
 package eionet.acl;
 
-import eionet.propertyplaceholderresolver.CircularReferenceException;
-import eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
-import eionet.propertyplaceholderresolver.UnresolvedPropertyException;
-import eionet.propertyplaceholderresolver.util.ConfigurationLoadException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -25,10 +21,10 @@ public final class AclInitializerImpl implements AclInitializer {
     private final String filesystemTargetDirectory;
     private final String gdemGroupFilePath;
 
-    public AclInitializerImpl(String classpathDirectoryName, ConfigurationPropertyResolver configurationPropertyResolver) throws IOException, UnresolvedPropertyException, CircularReferenceException, ConfigurationLoadException {
+    public AclInitializerImpl(String classpathDirectoryName) throws IOException {
         this.classpathDirectoryName = classpathDirectoryName;
-        this.filesystemTargetDirectory = configurationPropertyResolver.resolveValue("file.aclfolder");
-        this.gdemGroupFilePath = configurationPropertyResolver.resolveValue("file.localgroups");
+        this.filesystemTargetDirectory = AccessController.getAclProperties().getFileAclfolder() ;
+        this.gdemGroupFilePath = AccessController.getAclProperties().getFileLocalgroups();
 
     }
     

@@ -1,8 +1,5 @@
 package eionet.acl;
 
-import eionet.propertyplaceholderresolver.ConfigurationDefinitionProviderImpl;
-import eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
-import eionet.propertyplaceholderresolver.ConfigurationPropertyResolverImpl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -31,10 +28,10 @@ public class AccessControlListTest extends ACLDatabaseTestCase {
 
     @Before
     public void setUp() throws Exception {
-        ConfigurationPropertyResolver propertyResolver = new ConfigurationPropertyResolverImpl(new ConfigurationDefinitionProviderImpl("acl.properties"));
-        AccessController.initAccessController(propertyResolver);
-    }
-    
+        AclProperties aclProperties = AclPropertiesBuilder.AclPropertiesBuilder ( "acl.properties" );
+        AccessController.initAccessController(aclProperties );
+        
+    }    
     /**
      * Tests various methods of AccessControlListIF, but also makes sure the code is still able to handle ACL files that are not in
      * XML format, because the tests here are run on _whatever.acl, which is indeed in the old format.
@@ -137,15 +134,15 @@ public class AccessControlListTest extends ACLDatabaseTestCase {
         AccessController.removeAcl(aclPath);
         assertFalse(AccessController.aclExists(aclPath));
     }
-
-    /**
-     * Constructs a hashtable representing an ACL entry.
-     *
-     * @param principalType principal type
-     * @param principalId principal ID
-     * @param permissions permissions in CSV format
-     * @return entry hash
-     */
+//
+//    /**
+//     * Constructs a hashtable representing an ACL entry.
+//     *
+//     * @param principalType principal type
+//     * @param principalId principal ID
+//     * @param permissions permissions in CSV format
+//     * @return entry hash
+//     */
     private Hashtable<String, String> constructAclEntry(String principalType, String principalId, String permissions) {
 
         Hashtable<String, String> h = new Hashtable<String, String>();

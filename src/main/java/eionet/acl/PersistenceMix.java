@@ -22,7 +22,6 @@
  */
 package eionet.acl;
 
-import eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
 import java.security.Principal;
 import java.security.acl.Group;
 import java.security.acl.Permission;
@@ -43,16 +42,14 @@ class PersistenceMix implements Persistence {
      * logger instance.
      */
     private static final Logger LOGGER = Logger.getLogger(PersistenceMix.class);
-    private ConfigurationPropertyResolver configurationPropertyResolver;
     private PersistenceFile fileModule;
     private PersistenceDB dbModule;
 
-    public PersistenceMix(ConfigurationPropertyResolver configurationPropertyResolver) {
-        this.configurationPropertyResolver = configurationPropertyResolver;
-        fileModule = new PersistenceFile(this.configurationPropertyResolver);
+    public PersistenceMix() {
+        fileModule = new PersistenceFile();
         //TODO: Only call dbModule if there is a property for it.
         try {
-            dbModule = new PersistenceDB(this.configurationPropertyResolver);
+            dbModule = new PersistenceDB();
         } catch (DbNotSupportedException e) {
             dbModule = null;
         }

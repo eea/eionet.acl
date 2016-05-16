@@ -1,8 +1,5 @@
 package eionet.acl;
 
-import eionet.propertyplaceholderresolver.ConfigurationDefinitionProviderImpl;
-import eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
-import eionet.propertyplaceholderresolver.ConfigurationPropertyResolverImpl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -26,6 +23,7 @@ public class RemoteServiceTest extends ACLDatabaseTestCase {
     public ExpectedException thrown = ExpectedException.none();
 
     RemoteService rs;
+    private AclProperties aclProperties;
 
     @Before
     public void logIn() throws Exception {
@@ -37,8 +35,8 @@ public class RemoteServiceTest extends ACLDatabaseTestCase {
     
     @Before
     public void setUp() throws Exception {
-        ConfigurationPropertyResolver propertyResolver = new ConfigurationPropertyResolverImpl(new ConfigurationDefinitionProviderImpl("acl.properties"));
-        AccessController.initAccessController(propertyResolver);
+        this.aclProperties = new AclProperties();
+        this.aclProperties = AclPropertiesBuilder.AclPropertiesBuilder ( "acl.properties" );
     }
 
     /**

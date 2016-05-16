@@ -23,9 +23,6 @@
 
 package eionet.acl;
 
-import eionet.propertyplaceholderresolver.ConfigurationDefinitionProviderImpl;
-import eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
-import eionet.propertyplaceholderresolver.ConfigurationPropertyResolverImpl;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -46,10 +43,11 @@ public class AccessControllerTest extends ACLDatabaseTestCase {
 
     @Before
     public void setUp() throws Exception {
-        ConfigurationPropertyResolver propertyResolver = new ConfigurationPropertyResolverImpl(new ConfigurationDefinitionProviderImpl("acl.properties"));
-        AccessController.initAccessController(propertyResolver);
-    }
-    
+        
+        AclProperties aclProperties = AclPropertiesBuilder.AclPropertiesBuilder ( "acl.properties" );
+        AccessController.initAccessController(aclProperties );
+        
+    }    
     /**
      * Test that the anonymous user has 'v' permission and not 'c' permission.
      */

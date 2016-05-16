@@ -35,9 +35,6 @@ import java.util.List;
 import java.util.Map;
 import eionet.acl.impl.AclImpl;
 import eionet.acl.impl.PrincipalImpl;
-import eionet.propertyplaceholderresolver.CircularReferenceException;
-import eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
-import eionet.propertyplaceholderresolver.UnresolvedPropertyException;
 import java.util.logging.Level;
 
 import org.apache.log4j.Logger;
@@ -75,24 +72,20 @@ public class PersistenceFile implements Persistence {
     /**
      * Constructor.
      */
-    public PersistenceFile(ConfigurationPropertyResolver configurationPropertyResolver) {
-        try {
-            permissionsFileName = configurationPropertyResolver.resolveValue("file.permissions");
-            localgroupsFileName = configurationPropertyResolver.resolveValue("file.localgroups");
-            aclsFolderName = configurationPropertyResolver.resolveValue("file.aclfolder");
+    public PersistenceFile() {
+        
+        permissionsFileName = AccessController.getAclProperties().getFilePermissions() ;
+        localgroupsFileName = AccessController.getAclProperties().getFileLocalgroups() ;
+        aclsFolderName = AccessController.getAclProperties().getFileAclfolder() ;
 
-            try {
-                AclInitializerImpl aclInitializer = new AclInitializerImpl("acl", configurationPropertyResolver);
-                aclInitializer.execute();
-            } catch (Exception ex) {
-                java.util.logging.Logger.getLogger(AccessController.class.getName()).severe(ex.getMessage());
-            }
-            fileReader = new AclFileReader();
-        } catch (UnresolvedPropertyException ex) {
-            java.util.logging.Logger.getLogger(PersistenceFile.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (CircularReferenceException ex) {
-            java.util.logging.Logger.getLogger(PersistenceFile.class.getName()).log(Level.SEVERE, null, ex);
+        try {
+            AclInitializerImpl aclInitializer = new AclInitializerImpl("acl");
+            aclInitializer.execute();
+        } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(AccessController.class.getName()).severe(ex.getMessage());
         }
+        fileReader = new AclFileReader();
+        
     }
 
     /**

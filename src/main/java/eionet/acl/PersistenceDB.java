@@ -24,7 +24,6 @@ package eionet.acl;
 
 import eionet.acl.impl.AclImpl;
 import eionet.acl.impl.PrincipalImpl;
-import eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
 import java.security.acl.Group;
 import java.security.Principal;
 import java.sql.Connection;
@@ -59,12 +58,12 @@ public class PersistenceDB implements Persistence {
     DataSource dataSource = null;
     String dbUrl, dbDriver, dbUser, dbPwd;
 
-    PersistenceDB(ConfigurationPropertyResolver configurationPropertyResolver) throws DbNotSupportedException {
+    PersistenceDB() throws DbNotSupportedException {
         try {
-            dbUrl = configurationPropertyResolver.resolveValue("db.url");
-            dbDriver = configurationPropertyResolver.resolveValue("db.driver");
-            dbUser = configurationPropertyResolver.resolveValue("db.user");
-            dbPwd = configurationPropertyResolver.resolveValue("db.pwd");
+            dbUrl = AccessController.getAclProperties().getDbUrl();
+            dbDriver = AccessController.getAclProperties().getDbDriver();
+            dbUser = AccessController.getAclProperties().getDbUser();
+            dbPwd = AccessController.getAclProperties().getDbPwd();
             checkAclTables();
         } catch (DbNotSupportedException dbne) {
             LOGGER.info("Database Not supported " + dbne);

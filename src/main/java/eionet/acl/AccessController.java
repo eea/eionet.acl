@@ -33,11 +33,6 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import eionet.acl.impl.PermissionImpl;
-import eionet.propertyplaceholderresolver.CircularReferenceException;
-import eionet.propertyplaceholderresolver.ConfigurationPropertyResolver;
-import eionet.propertyplaceholderresolver.UnresolvedPropertyException;
-import eionet.propertyplaceholderresolver.util.ConfigurationLoadException;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,8 +41,11 @@ import java.util.logging.Logger;
  * Access point to the API for ACL operations.
  */
 public final class AccessController {
-
-    public static final String TOMCAT_CONTEXT = "java:comp/env/";
+    
+    /**
+     * AclProperties object to be provided at construction.
+     */
+    private static AclProperties aclProperties;
 
     /**
      * ACLs.
@@ -94,7 +92,6 @@ public final class AccessController {
      * HashMap for permission descriptions.
      */
     static Hashtable<String, String> prmDescrs;
-    private static ConfigurationPropertyResolver configurationPropertyResolver;
 
     /**
      * Default permissions for ACLs when no DOC and DCC defined.
@@ -114,17 +111,25 @@ public final class AccessController {
     }
 
     /**
-     * Super dirty hack to allow quick re-implementation. TODO: Refactor this
-     * structure as a regular object to be injected into other modules/apps.
+     * An AclProperties object has to be supplied at instantiation
      *
-     * @param configurationPropertyResolver
+     * @param aclProperties
      */
-    public AccessController(ConfigurationPropertyResolver configurationPropertyResolver) {
-        initAccessController(configurationPropertyResolver);
+    public AccessController( AclProperties aclProperties) throws InvalidPropertiesException {
+        this.initAccessController(aclProperties);
     }
-
-    public static void initAccessController(ConfigurationPropertyResolver configurationPropertyResolver) {
-        AccessController.configurationPropertyResolver = configurationPropertyResolver;
+        
+        
+    public static void initAccessController(AclProperties aclProperties) throws InvalidPropertiesException {
+        AccessController.aclProperties = aclProperties;
+        validateProperties ();
+    }
+    
+    private static void validateProperties () throws InvalidPropertiesException {
+        if ( aclProperties.getFileAclfolder() == null || aclProperties.getAnonymousAccess() == null ||
+                aclProperties.getOwnerPermission() == null) {
+            throw new InvalidPropertiesException("all mandatory properties must be provided at startup");
+        }
     }
 
     /**
@@ -208,29 +213,18 @@ public final class AccessController {
     private static void readProperties() throws SignOnException {
 
         // read mandatory properties
-        try {
-
-            ownerPrm = configurationPropertyResolver.resolveValue("owner.permission");
-            // pre-defined entry name for anonymous access
-            anonymousEntry = configurationPropertyResolver.resolveValue("anonymous.access");
-
-            // pre-defined entry name for authenticated access
-            authEntry = configurationPropertyResolver.resolveValue("authenticated.access");
-
-            if (configurationPropertyResolver.isDefined("defaultdoc.permissions")) {
-                defaultDocAndDccPermissions = configurationPropertyResolver.resolveValue("defaultdoc.permissions");
-            }
-
-            if (configurationPropertyResolver.isDefined("persistence.provider")) {
-                persistenceDriver = configurationPropertyResolver.resolveValue("persistence.provider");
-            } else {
-                persistenceDriver = "eionet.acl.PersistenceMix";
-            }
-
-        } catch (UnresolvedPropertyException ex) {
-            handleResolverException(ex);
-        } catch (CircularReferenceException ex) {
-            handleResolverException(ex);
+        ownerPrm = aclProperties.getOwnerPermission();
+        // pre-defined entry name for anonymous access
+        anonymousEntry = aclProperties.getAnonymousAccess();
+        // pre-defined entry name for authenticated access
+        authEntry = aclProperties.getAuthenticatedAccess();
+        if ( aclProperties.getDefaultdocPermissions() != null ) {
+            defaultDocAndDccPermissions = aclProperties.getDefaultdocPermissions();
+        }
+        
+        persistenceDriver = aclProperties.getPersistenceProvider();
+        if ( persistenceDriver == null ) {
+            persistenceDriver = "eionet.acl.PersistenceMix";
         }
 
         if (ownerPrm.length() > 1) {
@@ -389,8 +383,8 @@ public final class AccessController {
         if (permStorage == null) {
             try {
                 Class fsClass = Class.forName(persistenceDriver);
-                Constructor constructor = fsClass.getConstructor(ConfigurationPropertyResolver.class);
-                permStorage = (Persistence) constructor.newInstance(configurationPropertyResolver);
+                Constructor constructor = fsClass.getConstructor();
+                permStorage = (Persistence) constructor.newInstance();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -496,8 +490,8 @@ public final class AccessController {
         reset();
     }
 
-    public static ConfigurationPropertyResolver getConfigurationPropertyResolver() {
-        return configurationPropertyResolver;
+    public static AclProperties getAclProperties() {
+        return aclProperties;
     }
 
     /**
