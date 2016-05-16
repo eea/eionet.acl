@@ -36,6 +36,7 @@ import eionet.acl.impl.PermissionImpl;
 import java.lang.reflect.Constructor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static org.apache.commons.lang.StringUtils.isBlank;
 
 /**
  * Access point to the API for ACL operations.
@@ -218,13 +219,15 @@ public final class AccessController {
         anonymousEntry = aclProperties.getAnonymousAccess();
         // pre-defined entry name for authenticated access
         authEntry = aclProperties.getAuthenticatedAccess();
-        if ( aclProperties.getDefaultdocPermissions() != null ) {
+        if ( ! isBlank( aclProperties.getDefaultdocPermissions() ) ) {
             defaultDocAndDccPermissions = aclProperties.getDefaultdocPermissions();
         }
         
-        persistenceDriver = aclProperties.getPersistenceProvider();
-        if ( persistenceDriver == null ) {
+        if ( isBlank( aclProperties.getPersistenceProvider() )  ) {
             persistenceDriver = "eionet.acl.PersistenceMix";
+        }
+        else {
+            persistenceDriver = aclProperties.getPersistenceProvider();
         }
 
         if (ownerPrm.length() > 1) {
