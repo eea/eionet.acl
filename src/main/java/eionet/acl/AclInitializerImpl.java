@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
+import static org.apache.commons.lang.StringUtils.isBlank;
 
 /**
  *
@@ -58,12 +59,12 @@ public final class AclInitializerImpl implements AclInitializer {
     }
 
     String getAdmins() {
-        return System.getProperty("initial.admin");
+        return AccessController.getAclProperties().getInitialAdmin();
     }
 
     void initializeGdemGroup(String path) {
         String admins = getAdmins();
-        if (admins == null) {
+        if (isBlank(admins)) {
             return;
         }
         File file = new File(path);

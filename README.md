@@ -1,24 +1,18 @@
-ACL Module 3.1-SNAPSHOT
+ACL Module 4.0
 =======================
 
 This is a module that implements an Access Control Mechanism based on Distributed Computing Environment.
 
-Version 2.0 has the same public interface as version 1.x except the package name space is changed from `com.tee.uit.security` to `eionet.acl`.
 
-Another change, but one that has requires no change in code is that the eionet acl-impl library has been included. This contains the SUN Microsystems implementation of groups, users etc. The only effect is that you _might_ have to remove the following in your pom.xml.
-```xml
-<dependency>
-    <groupId>eionet.acl</groupId>
-    <artifactId>acl-impl</artifactId>
-    <version>1.0</version>
-</dependency>
-```
+Another change, but one that has requires no change in code is that the eionet acl-impl library has been included. This contains the SUN Microsystems implementation of groups, users etc. 
 
-Since version 3.0 there is a change in the way the library is configured.  It uses acl.properties instead of uit.properties. All properties starting with `acl.` or `application.` have lost that prefix, as all properties in the file are relevant to ACL only. Additionally, there are a few other changes.
+In version 4.0 there is a change in the way the library is configured. The AccessController needs an AclProperties object for initialisation. There is a class AclPropertiesBuilder that can create an AclProperties object from a property file in the format of the 3.1 version.
+
+There is a new property that can be set, initial.admin, that overrides the admins of the gdem.group if set. The initial.admin accepts comma seperated names, e.g. initial.admin=roug,katsanas will override the admins in the files, for easier bootstraping.
 
 Here are the changes:
 
-| Version 1.0 and 2.0          | Version 3.0 |
+| Version 1.0 and 2.0          | Version 4.0 |
 | -------------------          | ----------- |
 | acl.owner.permission         | owner.permission |
 | acl.anonymous.access         | anonymous.access |
@@ -33,12 +27,20 @@ Here are the changes:
 | db.driver                    | db.driver |
 | db.user                      | db.user |
 | db.pwd                       | db.pwd |
+| -                            | initial.admin
 
-To upgrade to version 3.0, copy the uit.properties file to acl.properties. Delete all properties in uit.properties with a name from the above table. Delete all properties in acl.properties that are not in the table.
+In spring applications you can configure the module using spring beans. For example :
 
-### New in version 3.1
-
-Dependency changed to version 3.0-SNAPSHOT of Eionet directory module.
+    <bean id="aclProperties" class="eionet.acl.AclProperties">
+        <property name="ownerPermission" value="${owner.permission}" />
+        <property name="anonymousAccess" value="${anonymous.access}" />
+        <property name="authenticatedAccess" value="${authenticated.access}" />
+        <property name="defaultdocPermissions" value="${defaultdoc.permissions}" />
+        ......more properties......
+    </bean>
+    <bean id="accessController" class="eionet.acl.AccessController">
+        <constructor-arg index="0" ref="aclProperties" />
+    </bean>
 
 Installation
 ------------
@@ -64,7 +66,7 @@ Add this to your pom.xml:
     <dependency>
         <groupId>eionet</groupId>
         <artifactId>acl</artifactId>
-        <version>3.0</version>
+        <version>4.0-SNAPSHOT</version>
     </dependency>
 </dependencies>
 ```
@@ -76,44 +78,13 @@ Configuration
 
 - Copy `*.acl, acl.group, acl.prms` and `users.xml` from `src/test/resources` to external folder and make the necessary editing.
 
-The package can be configured via JNDI or a properties file. If a environment entry in JNDI is found then all required entries must be configured via JNDI. You configure the application through JNDI with the META-INF/context.xml of the web application using this package. In Tomcat all JNDI names will automatically be prefixed with `java:/comp/env`. Since it is a shared directory, ACL configurations are in the `acl/` sub-context. Example:
-
-```xml
-<Context>
-    <Environment name="acl/owner.permission" value="c" type="java.lang.String" override="false"/>
-</Context>
-```
-Instead of using `acl/db.driver`, `acl/db.url` to set up the connection to the database it is also possible to use a `acl/db.datasource`. When you set up the data source directly in JNDI, it should be possible to use a `<ResourceLink>` element to the webapp's data source, but this has not been tested yet.
-
-```xml
-<Context>
-    <Resource name="acl/db.datasource"
-        auth="Container"
-        type="javax.sql.DataSource"
-        maxActive="100"
-...
-    />
-</Context>
-```
-
 Alternatively copy `acl.properties` from `src/test/resources` to your project's classpath and change the property values accordingly. Note that the file and folder paths in the `acl.properties` are relative because of unit tests. For other usage, absolute paths should be used.
-
-If you want to continue with property files, but specify with JNDI, what file to load the properties from, then you can add a context environment variable called `acl/propertiesfile`
-```xml
-<Context>
-    <Environment name="acl/propertiesfile"
-                 value="/var/local/datadict/acl.properties"
-                 type="java.lang.String" override="false"/>
-</Context>
-```
 
 Unit tests
 ----------
 All the sources for unit tests are in src/test/java and src/test/resources.
 
-As configured in AccessControlListTest.java and acl.properties, the database tests are run on H2 in-memory database. The database structure
-is located in dbChangeLog.xml which is the change log file for Liquibase. Because MySql and H2 databases differ a little, there are modifications
-to SQL so it would work on both of the databases.
+As configured in AccessControlListTest.java and acl.properties, the database tests are run on H2 in-memory database. The database structure is located in dbChangeLog.xml which is the change log file for Liquibase. Because MySql and H2 databases differ a little, there are modifications to SQL so it would work on both of the databases.
 
 How to use it
 -------------
