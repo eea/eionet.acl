@@ -3,9 +3,6 @@ ACL Module 4.0
 
 This is a module that implements an Access Control Mechanism based on Distributed Computing Environment.
 
-
-Another change, but one that has requires no change in code is that the eionet acl-impl library has been included. This contains the SUN Microsystems implementation of groups, users etc. 
-
 In version 4.0 there is a change in the way the library is configured. The AccessController needs an AclProperties object for initialisation. There is a class AclPropertiesBuilder that can create an AclProperties object from a property file in the format of the 3.1 version.
 
 There is a new property that can be set, initial.admin, that overrides the admins of the gdem.group if set. The initial.admin accepts comma seperated names, e.g. initial.admin=roug,katsanas will override the admins in the files, for easier bootstraping.
