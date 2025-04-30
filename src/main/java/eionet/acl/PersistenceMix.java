@@ -20,7 +20,6 @@
  *
  * Original Code: Kaido Laine (TietoEnator)
  */
-
 package eionet.acl;
 
 import java.security.Principal;
@@ -34,25 +33,23 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-
 /**
- * This class mixes the capabilities of two classes to support
- * the legacy.
+ * This class mixes the capabilities of two classes to support the legacy.
  */
 class PersistenceMix implements Persistence {
 
-    /** logger instance. */
+    /**
+     * logger instance.
+     */
     private static final Logger LOGGER = Logger.getLogger(PersistenceMix.class);
-
     private PersistenceFile fileModule;
     private PersistenceDB dbModule;
 
-
-    public PersistenceMix(Hashtable props) {
-        fileModule = new PersistenceFile(props);
+    public PersistenceMix() {
+        fileModule = new PersistenceFile();
         //TODO: Only call dbModule if there is a property for it.
         try {
-            dbModule = new PersistenceDB(props);
+            dbModule = new PersistenceDB();
         } catch (DbNotSupportedException e) {
             dbModule = null;
         }
@@ -101,7 +98,7 @@ class PersistenceMix implements Persistence {
 
     @Override
     public void addAcl(String aclPath, String owner, String description, boolean isFolder)
-                throws SQLException, SignOnException {
+            throws SQLException, SignOnException {
         if (dbModule != null) {
             dbModule.addAcl(aclPath, owner, description, isFolder);
         } else {

@@ -20,13 +20,11 @@
  *
  * Original Code: Kaido Laine (TietoEnator)
  */
-
 package eionet.acl;
 
 import eionet.acl.impl.AclImpl;
 import eionet.acl.impl.PrincipalImpl;
 import java.security.acl.Group;
-import java.security.acl.Permission;
 import java.security.Principal;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -39,7 +37,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import javax.sql.DataSource;
@@ -47,40 +44,27 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-
 /**
- * DB operations implementation.
- * Expects two tables in the database: ACLS and ACL_ROWS.
+ * DB operations implementation. Expects two tables in the database: ACLS and
+ * ACL_ROWS.
  */
 public class PersistenceDB implements Persistence {
 
-    /** logger instance. */
+    /**
+     * logger instance.
+     */
     private static final Logger LOGGER = Logger.getLogger(PersistenceDB.class);
 
     DataSource dataSource = null;
-    Hashtable props = null;
     String dbUrl, dbDriver, dbUser, dbPwd;
 
-    PersistenceDB(Hashtable props) throws DbNotSupportedException {
-
-        this.props = props;
+    PersistenceDB() throws DbNotSupportedException {
         try {
-            if (props != null) {
-                if (props.containsKey("db.datasource")) {
-                    dataSource = (DataSource) props.get("db.datasource");
-                } else {
-                    dbUrl = (String) props.get("db.url");
-                    dbDriver = (String) props.get("db.driver");
-                    dbUser = (String) props.get("db.user");
-                    dbPwd = (String) props.get("db.pwd");
-                }
-            }
-
+            dbUrl = AccessController.getAclProperties().getDbUrl();
+            dbDriver = AccessController.getAclProperties().getDbDriver();
+            dbUser = AccessController.getAclProperties().getDbUser();
+            dbPwd = AccessController.getAclProperties().getDbPwd();
             checkAclTables();
-
-        } catch (MissingResourceException mre) {
-            LOGGER.info("Database property not configured, assuming no database support " + mre);
-            throw new DbNotSupportedException();
         } catch (DbNotSupportedException dbne) {
             LOGGER.info("Database Not supported " + dbne);
             throw dbne;
@@ -95,8 +79,9 @@ public class PersistenceDB implements Persistence {
 
     /**
      * Checks ACL tables existance.
-     * @throws SQLException in case of different database errors: wrong configuration,
-     *   database is down etc
+     *
+     * @throws SQLException in case of different database errors: wrong
+     * configuration, database is down etc
      * @throws DbNotSupportedException if no ACL tables
      */
     private void checkAclTables() throws SQLException, DbNotSupportedException {
@@ -114,13 +99,15 @@ public class PersistenceDB implements Persistence {
                 Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery("select count(*) from ACLS");
                 ResultSet rs2 = stmt.executeQuery("select count(*) from ACL_ROWS");
-            //no tables assume ACLs in DB is not supported
+                //no tables assume ACLs in DB is not supported
             } catch (SQLException sqle) {
                 throw new DbNotSupportedException("Error checking ACL tables " + sqle);
             }
         } finally {
             try {
-                if (conn != null) conn.close();
+                if (conn != null) {
+                    conn.close();
+                }
             } catch (Exception e) {
                 LOGGER.error("Error in closing connection " + e);
             }
@@ -148,15 +135,15 @@ public class PersistenceDB implements Persistence {
         }
 
         //get the parent ACl and if it has DOC and DCC entry rows, process them
-        String parentName = (lastSlash == 0 ? "/" :  aclPath.substring(0, lastSlash));
+        String parentName = (lastSlash == 0 ? "/" : aclPath.substring(0, lastSlash));
         String aclName = aclPath.substring(lastSlash + 1);
 
         AccessControlListIF parentAcl = AccessController.getAcl(parentName);
 
-        description =  description == null ? "" : description;
+        description = description == null ? "" : description;
 
         String sql = "INSERT INTO ACLS (ACL_NAME, PARENT_NAME, OWNER, DESCRIPTION) VALUES('" + aclName + "', '" + parentName
-                + "','" + owner +   "', '" + description + "')";
+                + "','" + owner + "', '" + description + "')";
 
         executeUpdate(sql);
 
@@ -169,20 +156,14 @@ public class PersistenceDB implements Persistence {
 
     }
 
-
     /**
      * special handling for DOC and DDC entries.
      *
-     * @param aclId
-     *            ACL ID
-     * @param docAndDccEntries
-     *            list of DOC and DCC entries
-     * @param owner
-     *            ACL owner
-     * @param isFolder
-     *            true if can have sub-folders
-     * @throws SQLException
-     *             if inserts fail
+     * @param aclId ACL ID
+     * @param docAndDccEntries list of DOC and DCC entries
+     * @param owner ACL owner
+     * @param isFolder true if can have sub-folders
+     * @throws SQLException if inserts fail
      */
     private void processDocAndDccEntries(String aclId, List<HashMap<String, String>> docAndDccEntries, String owner,
             boolean isFolder) throws SQLException {
@@ -190,9 +171,7 @@ public class PersistenceDB implements Persistence {
         String sql;
 
         // {ENTRY_TYPE=doc, PERMISSIONS=d,u,c, PRINCIPAL=owner, TYPE=U}
-
         // if a user is a DOC ACL and she is the owner as well only the owner permissions are granted!!
-
         // add default DCC entry if no DCC entries:
         createDefaultDCCEntries(docAndDccEntries, isFolder);
 
@@ -209,8 +188,8 @@ public class PersistenceDB implements Persistence {
 
             // first copy the DCC or DOC entry to the ACL if folders are supported:
             if (isFolder) {
-                sql =
-                        "INSERT INTO ACL_ROWS (ACL_ID, ENTRY_TYPE, TYPE, PRINCIPAL, PERMISSIONS, STATUS) "
+                sql
+                        = "INSERT INTO ACL_ROWS (ACL_ID, ENTRY_TYPE, TYPE, PRINCIPAL, PERMISSIONS, STATUS) "
                         + " VALUES (" + aclId + ", '" + type + "','" + eType + "','" + eName + "','" + permissions + "', 1)";
                 executeUpdate(sql);
             }
@@ -230,14 +209,14 @@ public class PersistenceDB implements Persistence {
 
                 if (entryPermissions == null) {
                     // TODO - change type and entry_type
-                    sql =
-                            "INSERT INTO ACL_ROWS (ACL_ID, ENTRY_TYPE, TYPE, PRINCIPAL, PERMISSIONS, STATUS) "
+                    sql
+                            = "INSERT INTO ACL_ROWS (ACL_ID, ENTRY_TYPE, TYPE, PRINCIPAL, PERMISSIONS, STATUS) "
                             + " VALUES (" + aclId + ", '" + type + "','" + eType + "','" + eName + "','" + permissions + "', 1)";
                 } else {
                     entryPermissions = mergePermissions(entryPermissions, permissions);
-                    sql =
-                            "UPDATE ACL_ROWS SET PERMISSIONS = '" + entryPermissions + "' WHERE ACL_ID=" + aclId
-                                    + " AND ENTRY_TYPE='" + type + "' AND TYPE='" + eType + "' AND PRINCIPAL='" + eName + "'";
+                    sql
+                            = "UPDATE ACL_ROWS SET PERMISSIONS = '" + entryPermissions + "' WHERE ACL_ID=" + aclId
+                            + " AND ENTRY_TYPE='" + type + "' AND TYPE='" + eType + "' AND PRINCIPAL='" + eName + "'";
                 }
                 executeUpdate(sql);
             }
@@ -247,19 +226,19 @@ public class PersistenceDB implements Persistence {
         if (ownerE != null) {
             // check if the owner user already exists in ACL ROWS:
             // NB If it does we take only OWNER DOC permissions into account and ignore the rest (given by regular ACL entries)
-            sql =
-                    "SELECT PERMISSIONS FROM ACL_ROWS " + " WHERE ACL_ID = " + aclId + " AND ENTRY_TYPE='user' AND "
-                            + " TYPE='object' AND PRINCIPAL ='" + owner + "'";
+            sql
+                    = "SELECT PERMISSIONS FROM ACL_ROWS " + " WHERE ACL_ID = " + aclId + " AND ENTRY_TYPE='user' AND "
+                    + " TYPE='object' AND PRINCIPAL ='" + owner + "'";
             String[][] r = executeStringQuery(sql);
             if (r.length == 0) { // not existing
-                sql =
-                        "INSERT INTO ACL_ROWS (ACL_ID, ENTRY_TYPE, TYPE, PRINCIPAL, PERMISSIONS, STATUS) "
+                sql
+                        = "INSERT INTO ACL_ROWS (ACL_ID, ENTRY_TYPE, TYPE, PRINCIPAL, PERMISSIONS, STATUS) "
                         + " VALUES (" + aclId + ", 'user','object','" + owner + "','" + ownerE.get("PERMISSIONS") + "', 1)";
 
             } else { // exists, replace the PERMISSIONS
-                sql =
-                        "UPDATE ACL_ROWS SET PERMISSIONS='" + ownerE.get("PERMISSIONS") + "'" + " WHERE ACL_ID = " + aclId
-                                + " AND ENTRY_TYPE='user' AND " + " TYPE='object' AND PRINCIPAL ='" + owner + "'";
+                sql
+                        = "UPDATE ACL_ROWS SET PERMISSIONS='" + ownerE.get("PERMISSIONS") + "'" + " WHERE ACL_ID = " + aclId
+                        + " AND ENTRY_TYPE='user' AND " + " TYPE='object' AND PRINCIPAL ='" + owner + "'";
             }
 
             executeUpdate(sql);
@@ -268,8 +247,9 @@ public class PersistenceDB implements Persistence {
     }
 
     /**
-     * If no DCC entries add default DCC entry for the owner to prevent creation of ACL
-     * with no permissions.
+     * If no DCC entries add default DCC entry for the owner to prevent creation
+     * of ACL with no permissions.
+     *
      * @param docAndDccEntries entries list
      * @param folder if a folder is created
      */
@@ -314,11 +294,12 @@ public class PersistenceDB implements Persistence {
     public void removeAcl(String aclPath) throws SQLException, SignOnException {
         int lastSlash = aclPath.lastIndexOf("/");
 
-        if (lastSlash == -1)
+        if (lastSlash == -1) {
             throw new SignOnException("Invalid ACL Path, must contain at least one '/'");
+        }
 
         //get the aprent ACl and see if it has DOC entry rows
-        String parentName = (lastSlash == 0 ? "/" :  aclPath.substring(0, lastSlash));
+        String parentName = (lastSlash == 0 ? "/" : aclPath.substring(0, lastSlash));
         String aclName = aclPath.substring(lastSlash + 1);
 
         String sql = "SELECT ACL_ID FROM ACLS WHERE PARENT_NAME='" + parentName + "' AND ACL_NAME='" + aclName + "'";
@@ -345,7 +326,7 @@ public class PersistenceDB implements Persistence {
             throw new SignOnException("Invalid ACL Path, must contain at least one '/'");
         }
 
-        String parentName = (lastSlash == 0 ? "/" :  aclPath.substring(0, lastSlash));
+        String parentName = (lastSlash == 0 ? "/" : aclPath.substring(0, lastSlash));
         String aclName = aclPath.substring(lastSlash + 1);
 
         //new Acl name
@@ -355,7 +336,7 @@ public class PersistenceDB implements Persistence {
             throw new SignOnException("Invalid ACL Path in New ACL name, must contain at least one '/'");
         }
 
-        String newParentName = (lastSlash == 0 ? "/" :  newAclPath.substring(0, lastSlash));
+        String newParentName = (lastSlash == 0 ? "/" : newAclPath.substring(0, lastSlash));
         String newAclName = newAclPath.substring(lastSlash + 1);
 
         if (!newParentName.equalsIgnoreCase(parentName)) {
@@ -408,16 +389,16 @@ public class PersistenceDB implements Persistence {
         if (rvec.size() > 0) {
             rval = new String[rvec.size()][];
 
-            for (int i = 0; i < rvec.size(); ++i)
+            for (int i = 0; i < rvec.size(); ++i) {
                 rval[i] = (String[]) rvec.elementAt(i);
+            }
         }
 
         // Success
         return rval;
     }
 
-
-    private void close(Connection con, Statement stmt, ResultSet rset) throws SQLException  {
+    private void close(Connection con, Statement stmt, ResultSet rset) throws SQLException {
         try {
             if (rset != null) {
                 rset.close();
@@ -431,13 +412,13 @@ public class PersistenceDB implements Persistence {
         } catch (Exception e) {
             throw new SQLException("Error" + e.getMessage());
         } finally {
-            try { con.close(); } catch (SQLException e) {
-                throw new SQLException("Error"  + e.getMessage());
+            try {
+                con.close();
+            } catch (SQLException e) {
+                throw new SQLException("Error" + e.getMessage());
             }
         }
     }
-
-
 
     /**
      * Returns new database connection.
@@ -448,7 +429,7 @@ public class PersistenceDB implements Persistence {
         Connection con = null;
         try {
             if (dataSource != null) {
-                 con = dataSource.getConnection();
+                con = dataSource.getConnection();
             } else {
                 Class.forName(dbDriver);
                 con = DriverManager.getConnection(dbUrl, dbUser, dbPwd);
@@ -460,7 +441,7 @@ public class PersistenceDB implements Persistence {
         }
         AccessController.dbInError = false;
         return con;
-     }
+    }
 
     private int executeUpdate(String sql) throws SQLException {
         Connection con = null; // Connection object
@@ -484,7 +465,6 @@ public class PersistenceDB implements Persistence {
             //logger.error("Connection.createStatement() failed: " + sql_stmt,e);
             throw new SQLException("Update failed: " + sql);
         }
-
 
         // Execute update
         try {
@@ -557,10 +537,11 @@ public class PersistenceDB implements Persistence {
 
         acl.setMechanism(AccessControlListIF.DB);
         //we have to set a fake owner if there is no owner specified in the ACL
-        if (ownerName == null || ownerName.equals(""))
+        if (ownerName == null || ownerName.equals("")) {
             acl.owner = new PrincipalImpl(name);
-        else
+        } else {
             acl.owner = new PrincipalImpl(ownerName);
+        }
 
         acl.acl = new AclImpl(acl.owner, name);
         acl.description = description;
@@ -569,7 +550,6 @@ public class PersistenceDB implements Persistence {
         readAclRowsFromDb(aclRows, acl);
         return acl;
     }
-
 
     /**
      * Parse ACL rows originating from Database.
@@ -587,9 +567,9 @@ public class PersistenceDB implements Persistence {
                 principal = eType;
                 eType = "user";
             }
-            if (eType.equals("owner"))
+            if (eType.equals("owner")) {
                 eType = "user"; //not supported yet
-
+            }
             String aRow = eType + ":" + principal + ":" + perms;
 
             if (!type.equalsIgnoreCase("object")) {
@@ -601,8 +581,8 @@ public class PersistenceDB implements Persistence {
     }
 
     /**
-     * Stores ACL in the DB table. The <code>aclAttrs</code> is unused. You can't currently change
-     * the description in the database.
+     * Stores ACL in the DB table. The <code>aclAttrs</code> is unused. You
+     * can't currently change the description in the database.
      *
      * @param aclName ACL path
      * @param aclAttrs - A map of attributes. The "description" is an attribute.
@@ -641,7 +621,7 @@ public class PersistenceDB implements Persistence {
 
             // update status -> backup rows
             sql = "UPDATE ACL_ROWS SET STATUS='0' WHERE ACL_ID=" + aclId;
-                executeUpdate(sql);
+            executeUpdate(sql);
             LOGGER.debug("Backup done, entries in the ACL " + r.length);
             // process rows in the list, add into DB
             try {
@@ -672,16 +652,18 @@ public class PersistenceDB implements Persistence {
      * user:john:rwx
      * user:john:rwx:doc
      * </pre>
+     *
      * @param aclEntries
      * @return List of rows in the plain text file format.
      */
     private static ArrayList<String> aclEntriesToFileRows(List aclEntries) {
 
-        if (aclEntries == null)
+        if (aclEntries == null) {
             return null;
+        }
 
         ArrayList<String> l = new ArrayList<String>();
-        for  (int i = 0; i < aclEntries.size(); i++) {
+        for (int i = 0; i < aclEntries.size(); i++) {
 
             Hashtable e = (Hashtable) aclEntries.get(i);
             String eType = (String) e.get("type");
@@ -691,8 +673,9 @@ public class PersistenceDB implements Persistence {
 
             StringBuffer eRow = new StringBuffer(eType);
             eRow.append(":").append(eName).append(":").append(ePerms);
-            if (aclType != null && !aclType.equals("object"))
+            if (aclType != null && !aclType.equals("object")) {
                 eRow.append(":").append(aclType);
+            }
 
             l.add(eRow.toString());
         }
@@ -723,8 +706,9 @@ public class PersistenceDB implements Persistence {
         if (thirdC != -1) {
             ePerms = aclE.substring(secondC + 1, thirdC);
             aclType = aclE.substring(thirdC + 1);
-        } else
+        } else {
             ePerms = aclE.substring(secondC + 1);
+        }
 
         //ignore "description" because we hold descriptions in ACL text files only
         if (!eType.equals("description")) {
@@ -734,9 +718,9 @@ public class PersistenceDB implements Persistence {
         }
     }
 
-
     /**
      * Checks if entry already exists.
+     *
      * @param aclId acl id
      * @param entryType entry type
      * @param principalType principal type
@@ -757,12 +741,12 @@ public class PersistenceDB implements Persistence {
             return null;
         }
 
-
     }
 
     /**
      * Merges one CSV permissions String with the other avoiding duplicates.
      * Example: Result of merging "a,b,c,d" and "a,x,c,y" is "a,b,c,d,x,y"
+     *
      * @param existingPermissions existing permissions
      * @param newPermissions new permissions String
      * @return merged string

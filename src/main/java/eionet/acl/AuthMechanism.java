@@ -32,8 +32,16 @@ import eionet.directory.DirServiceException;
 public class AuthMechanism {
 
     /** */
-    static LocalAuthService localM;
-
+    private static class LocalAuthServiceHolder {
+            private static final LocalAuthService LOCALAUTH;
+            static {
+                try {
+                    LOCALAUTH = new LocalAuthService();
+                } catch (Exception e) {
+                    throw new ExceptionInInitializerError(e);
+                }
+            }
+    }
     /**
      *
      */
@@ -50,8 +58,7 @@ public class AuthMechanism {
 
         boolean authenticated = false;
 
-        if (localM == null)
-            localM = new LocalAuthService();
+        LocalAuthService localM = LocalAuthServiceHolder.LOCALAUTH;
 
         // try local users
         if (localM.supported) {
@@ -81,8 +88,7 @@ public class AuthMechanism {
     public static String getFullName(String userName) throws SignOnException {
 
         String fullName="";
-        if (localM == null)
-            localM = new LocalAuthService();
+        LocalAuthService localM = LocalAuthServiceHolder.LOCALAUTH;
 
         //try localservice
         if (localM.supported)

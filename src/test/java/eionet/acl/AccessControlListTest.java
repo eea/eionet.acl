@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
+import org.junit.Before;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,6 +26,12 @@ public class AccessControlListTest extends ACLDatabaseTestCase {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
+    @Before
+    public void setUp() throws Exception {
+        AclProperties aclProperties = AclPropertiesBuilder.AclPropertiesBuilder ( "acl.properties" );
+        AccessController.initAccessController(aclProperties );
+        
+    }    
     /**
      * Tests various methods of AccessControlListIF, but also makes sure the code is still able to handle ACL files that are not in
      * XML format, because the tests here are run on _whatever.acl, which is indeed in the old format.
@@ -127,15 +134,15 @@ public class AccessControlListTest extends ACLDatabaseTestCase {
         AccessController.removeAcl(aclPath);
         assertFalse(AccessController.aclExists(aclPath));
     }
-
-    /**
-     * Constructs a hashtable representing an ACL entry.
-     *
-     * @param principalType principal type
-     * @param principalId principal ID
-     * @param permissions permissions in CSV format
-     * @return entry hash
-     */
+//
+//    /**
+//     * Constructs a hashtable representing an ACL entry.
+//     *
+//     * @param principalType principal type
+//     * @param principalId principal ID
+//     * @param permissions permissions in CSV format
+//     * @return entry hash
+//     */
     private Hashtable<String, String> constructAclEntry(String principalType, String principalId, String permissions) {
 
         Hashtable<String, String> h = new Hashtable<String, String>();

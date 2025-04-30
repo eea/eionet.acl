@@ -27,11 +27,13 @@ import java.io.IOException;
 import org.xml.sax.SAXException;
 
 import java.io.FileNotFoundException;
-import org.w3c.dom.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import static org.apache.commons.lang.StringUtils.isBlank;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
 /**
  * Authentication of local users. These are stored in an XML file containing
@@ -43,49 +45,59 @@ import javax.xml.parsers.ParserConfigurationException;
 public class LocalAuthService {
 
     /** */
-    Document doc;
-    boolean supported = false;
-
+    static Document doc;
+    static boolean supported = false;
+    
+    private static class DocumentHolder {
+        private static final Document DOCUMENT;
+        static {
+            try {
+                DOCUMENT = initDoc();
+            } catch (Exception e) {
+                throw new ExceptionInInitializerError(e);
+            }
+        }
+    }
     /**
      *
      * @throws SignOnException
      */
-    LocalAuthService() throws SignOnException {
-        if (doc == null)
-            initDoc();
+    public LocalAuthService() throws SignOnException {
+        doc = DocumentHolder.DOCUMENT ;
     }
 
     /**
      *
      * @throws SignOnException
      */
-    private void initDoc() throws SignOnException {
+    private static Document initDoc() throws SignOnException {
 
         String fileFullPath = null;
-        try {
-            fileFullPath = (String) AccessController.getProperties().get("file.localusers");
-        } catch (Exception mre) {
-            supported = false;
-            return;
-        }
-
+        
+        fileFullPath = (String) AccessController.getAclProperties().getFileLocalusers();
+        if  ( isBlank (fileFullPath) ) return null;
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();
+            doc = null;
             doc = db.parse(fileFullPath);
+            doc.getElementsByTagName("local-users").item(0).getChildNodes(); // ensure that the local file is well formed if to be used
             supported = true;
         } catch (FileNotFoundException fie) {
             fie.printStackTrace();
-            throw new SignOnException (fie, "File not found: " + fileFullPath);
+            //throw new SignOnException (fie, "File not found: " + fileFullPath);
         } catch (IOException ioe) {
             ioe.printStackTrace();
-            throw new SignOnException (ioe, "I/O error when reading file: " + fileFullPath);
+            //throw new SignOnException (ioe, "I/O error when reading file: " + fileFullPath);
         } catch (SAXException sae) {
             sae.printStackTrace();
-            throw new SignOnException (sae, "SAX error when parsing file: " + fileFullPath);
+            //throw new SignOnException (sae, "SAX error when parsing file: " + fileFullPath);
         } catch (ParserConfigurationException pce) {
             pce.printStackTrace();
-            throw new SignOnException (pce, "Parser configuration problem when reading file: " + fileFullPath);
+            //throw new SignOnException (pce, "Parser configuration problem when reading file: " + fileFullPath);
+        }
+        finally {
+            return doc;
         }
     }
 
@@ -93,9 +105,9 @@ public class LocalAuthService {
      * Authenticate.
      */
     public void sessionLogin(String user, String pwd) throws UserNotFoundException, SignOnException {
-        /*if (doc == null)
-         initDoc(); */
-
+        
+        if ( ! supported ) throw new SignOnException("Local authentication not available");
+        
         NodeList  nl = doc.getElementsByTagName("local-users").item(0).getChildNodes();
         boolean authenticated = false;
         for (int i = 0; i < nl.getLength(); i++) {
@@ -123,10 +135,8 @@ public class LocalAuthService {
      * @return the full name as a string.
      */
     public String getFullName(String userName) throws SignOnException {
-        /*
-         if (doc == null)
-         initDoc();
-         */
+        
+        if ( ! supported ) throw new SignOnException("Local authentication not available");
 
         String fullName = null;
         NodeList  nl = doc.getElementsByTagName("local-users").item(0).getChildNodes();
