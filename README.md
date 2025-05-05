@@ -1,7 +1,9 @@
-ACL Module 4.0
+ACL Module 5.0
 =======================
 
 This is a module that implements an Access Control Mechanism based on Distributed Computing Environment.
+
+In version 5.0 the java.security.acl interfaces have been copied inside the eionet.acl package in order to support clients of the ACL Module that use Java 17 and above (since java.security.acl has been removed in Java 17).  
 
 In version 4.0 there is a change in the way the library is configured. The AccessController needs an AclProperties object for initialisation. There is a class AclPropertiesBuilder that can create an AclProperties object from a property file in the format of the 3.1 version.
 

@@ -24,7 +24,6 @@ package eionet.acl;
 
 import eionet.acl.impl.AclImpl;
 import eionet.acl.impl.PrincipalImpl;
-import java.security.acl.Group;
 import java.security.Principal;
 import java.sql.Connection;
 import java.sql.DriverManager;

@@ -24,7 +24,6 @@
 package eionet.acl;
 
 import java.security.Principal;
-import java.security.acl.Group;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;

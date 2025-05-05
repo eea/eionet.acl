@@ -25,7 +25,7 @@ package eionet.acl.impl;
  * have any questions.
  */
 
-import java.security.acl.Permission;
+import eionet.acl.Permission;
 
 /**
  * The PermissionImpl class implements the permission

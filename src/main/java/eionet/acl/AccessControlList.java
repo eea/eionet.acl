@@ -25,11 +25,6 @@
 package eionet.acl;
 
 import java.security.Principal;
-import java.security.acl.Acl;
-import java.security.acl.AclEntry;
-import java.security.acl.Group;
-import java.security.acl.NotOwnerException;
-import java.security.acl.Permission;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;

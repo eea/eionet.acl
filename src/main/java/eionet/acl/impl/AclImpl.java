@@ -26,11 +26,11 @@
 package eionet.acl.impl;
 
 import java.security.Principal;
-import java.security.acl.Acl;
-import java.security.acl.AclEntry;
-import java.security.acl.Group;
-import java.security.acl.NotOwnerException;
-import java.security.acl.Permission;
+import eionet.acl.Acl;
+import eionet.acl.AclEntry;
+import eionet.acl.Group;
+import eionet.acl.NotOwnerException;
+import eionet.acl.Permission;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.NoSuchElementException;

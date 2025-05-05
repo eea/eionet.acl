@@ -27,10 +27,10 @@ package eionet.acl.impl;
 
 
 import java.security.Principal;
-import java.security.acl.Group;
-import java.security.acl.LastOwnerException;
-import java.security.acl.NotOwnerException;
-import java.security.acl.Owner;
+import eionet.acl.Group;
+import eionet.acl.LastOwnerException;
+import eionet.acl.NotOwnerException;
+import eionet.acl.Owner;
 import java.util.Enumeration;
 
 /**

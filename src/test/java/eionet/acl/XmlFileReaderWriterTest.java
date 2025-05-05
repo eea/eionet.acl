@@ -25,7 +25,7 @@ package eionet.acl;
 
 import java.util.HashMap;
 import java.security.Principal;
-import java.security.acl.Group;
+import eionet.acl.Group;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;

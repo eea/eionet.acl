@@ -24,8 +24,6 @@ package eionet.acl;
 
 import java.sql.SQLException;
 import java.security.Principal;
-import java.security.acl.Group;
-import java.security.acl.Permission;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Hashtable;

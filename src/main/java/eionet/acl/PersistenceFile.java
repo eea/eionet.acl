@@ -24,8 +24,6 @@ package eionet.acl;
 
 import java.io.IOException;
 import java.io.File;
-import java.security.acl.Group;
-import java.security.acl.Permission;
 import java.security.Principal;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import eionet.acl.impl.AclImpl;
 import eionet.acl.impl.PrincipalImpl;
-import java.util.logging.Level;
 
 import org.apache.log4j.Logger;
 

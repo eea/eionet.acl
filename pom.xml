@@ -13,7 +13,7 @@
         <checkstyle.config.location>${basedir}/doc/checkstyle.xml</checkstyle.config.location>
     </properties>
 
-    <version>4.0-SNAPSHOT</version>
+    <version>5.0-SNAPSHOT</version>
     <name>ACL</name>
     <url>https://github.com/eea</url>
 

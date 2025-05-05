@@ -26,7 +26,7 @@ package eionet.acl.impl;
 
 
 import java.security.Principal;
-import java.security.acl.Group;
+import eionet.acl.Group;
 import java.util.Enumeration;
 import java.util.Vector;
 

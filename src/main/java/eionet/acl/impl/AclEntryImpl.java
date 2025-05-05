@@ -26,9 +26,9 @@ package eionet.acl.impl;
  */
 
 import java.security.Principal;
-import java.security.acl.AclEntry;
-import java.security.acl.Group;
-import java.security.acl.Permission;
+import eionet.acl.AclEntry;
+import eionet.acl.Group;
+import eionet.acl.Permission;
 import java.util.Enumeration;
 import java.util.Vector;
 
