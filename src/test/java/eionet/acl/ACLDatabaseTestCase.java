@@ -52,7 +52,7 @@ public abstract class ACLDatabaseTestCase {
         connection = ds.getConnection();
         Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
         Liquibase liquibase = new Liquibase("dbChangeLog.xml", new ClassLoaderResourceAccessor(), database);
-        liquibase.update(null);
+        liquibase.update("");
     }
 
     /**
